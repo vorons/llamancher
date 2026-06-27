@@ -135,10 +135,16 @@
       </div>
     {:else}
       <!-- Model header -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-semibold">{model.name}</h2>
-          <p class="text-xs text-muted-foreground mt-0.5">{model.quantization} · {model.size}</p>
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <h2 class="text-lg font-semibold truncate">{model.name}</h2>
+          <div class="text-xs text-muted-foreground mt-0.5">
+            {#if model.architecture}
+              <span class="font-mono uppercase tracking-tight text-[10px]">{model.architecture}</span>
+              <span class="mx-1.5 opacity-40">·</span>
+            {/if}
+            {model.quantization} · {model.size}
+          </div>
         </div>
         <button
           class={cn(
@@ -159,6 +165,20 @@
             <Play size={14} />
           {/if}
         </button>
+      </div>
+
+      <!-- Chips: layers, context, file type -->
+      <div class="flex flex-wrap gap-2">
+        {#if model.block_count && model.block_count !== '0'}
+          <span class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            {model.block_count} layers
+          </span>
+        {/if}
+        {#if model.context_length && model.context_length !== '0'}
+          <span class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            {model.context_length} ctx
+          </span>
+        {/if}
       </div>
 
       <Separator />
