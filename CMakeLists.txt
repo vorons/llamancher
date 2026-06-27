@@ -1,0 +1,46 @@
+cmake_minimum_required(VERSION 3.25)
+project(llamancher VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# ── Saucer ──────────────────────────────────────────────────────────────────
+include(FetchContent)
+FetchContent_Declare(
+  saucer
+  GIT_REPOSITORY "https://github.com/saucer/saucer"
+  GIT_TAG        v8.0.5
+)
+set(FETCHCONTENT_QUIET OFF)
+FetchContent_MakeAvailable(saucer)
+
+# ── Backend executable ──────────────────────────────────────────────────────
+add_executable(llamancher
+  backend/main.cpp
+  backend/model_manager.cpp
+  backend/server_manager.cpp
+  backend/settings.cpp
+  backend/preset.cpp
+)
+
+target_include_directories(llamancher PRIVATE backend)
+
+# ── Frontend build (Vite) ───────────────────────────────────────────────────
+find_program(PNPM pnpm)
+if(PNPM)
+  add_custom_command(
+    OUTPUT "${CMAKE_SOURCE_DIR}/frontend/dist/index.html"
+    COMMAND ${PNPM} install
+    COMMAND ${PNPM} run build
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/frontend"
+    COMMENT "Building Svelte frontend with Vite …"
+  )
+
+  # Embed the built frontend into the binary
+  saucer_embed("${CMAKE_SOURCE_DIR}/frontend/dist" TARGET llamancher)
+  target_link_libraries(llamancher PRIVATE saucer saucer::embedded)
+else()
+  message(WARNING "pnpm not found — frontend will not be built automatically")
+  target_link_libraries(llamancher PRIVATE saucer)
+endif()
