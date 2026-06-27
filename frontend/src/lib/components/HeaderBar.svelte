@@ -2,7 +2,6 @@
   import { view, selectedModel, serverStatus, serverModel, settingsOpen } from '$lib/stores.svelte';
   import { ArrowLeft, RefreshCw, Settings, Minus, Square, X } from '@lucide/svelte';
   import { cn } from '$lib/utils';
-  import { Separator } from '$lib/ui/separator';
 
   function handleRefresh() {
     window.dispatchEvent(new CustomEvent('refresh-models'));
@@ -51,7 +50,7 @@
       </button>
     {/if}
 
-    <Separator orientation="vertical" class="h-5" />
+    <span class="block w-px h-5 bg-border shrink-0" role="separator" aria-orientation="vertical"></span>
 
     <div class="flex items-center gap-1.5 text-xs text-muted-foreground" data-webview-ignore>
       <span class={cn('w-2 h-2 rounded-full', statusVariant)}></span>
@@ -74,7 +73,7 @@
       <Settings size={16} />
     </button>
 
-    <Separator orientation="vertical" class="h-5" />
+    <span class="block w-px h-5 bg-border shrink-0" role="separator" aria-orientation="vertical"></span>
 
     <button
       class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
