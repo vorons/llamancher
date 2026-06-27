@@ -23,7 +23,9 @@
   });
 
   const headerTitle = $derived(
-    $serverModel && $serverStatus !== 'stopped' ? $serverModel : 'llamancher'
+    $view === 'detail' && $selectedModel
+      ? $selectedModel.name
+      : 'llamancher'
   );
 </script>
 
