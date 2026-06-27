@@ -10,7 +10,7 @@ Scans a directory for `.gguf` files, lets you configure per-model presets (conte
 ## Features
 
 - **Model browser** — scans a directory for GGUF files, detects quantization from filename
-- **Per-model presets** — ctx size, threads, GPU layers, temperature, top-k/p, flash attention, mlock, no-mmap
+- **Per-model presets** — полный редактор всех параметров llama-server: размер контекста, слои GPU, семплинг (temp, top-k/p, min-p, repeat/presence/frequency penalty, mirostat), KV cache (batch/ubatch size, cache types, flash-attn), speculative decoding, auto-fit и другие
 - **Server lifecycle** — start/stop `llama-server`, health polling, status displayed in UI
 - **Persistent settings** — `~/.config/llamancher/settings.json`
 - **Persistent presets** — `~/.llamancher/models/<name>.preset.json`
@@ -137,14 +137,63 @@ cmake --build build --preset debug     # debug (fast iteration)
   "ctx_size": 4096,
   "threads": 8,
   "gpu_layers": 35,
-  "temp": 0.7,
-  "top_k": 40,
-  "top_p": 0.9,
-  "flash_attn": true,
+  "tensor_split": "",
+  "numa": "",
+  "split_mode": "",
+  "main_gpu": -1,
+  "device": "",
   "mlock": true,
-  "no_mmap": false
+  "no_mmap": false,
+  "batch_size": 2048,
+  "ubatch_size": 512,
+  "cache_type_k": "",
+  "cache_type_v": "",
+  "flash_attn": true,
+  "defrag_thold": -1,
+  "samplers": "",
+  "seed": -1,
+  "temp": 0.8,
+  "top_k": 40,
+  "top_p": 0.95,
+  "min_p": 0.05,
+  "repeat_penalty": 1.0,
+  "presence_penalty": 0.0,
+  "frequency_penalty": 0.0,
+  "mirostat": 0,
+  "parallel": 1,
+  "no_repack": false,
+  "verbose": false,
+  "verbosity": 0,
+  "log_file": "",
+  "spec_type": "",
+  "spec_draft_n_max": 16,
+  "spec_draft_n_min": 0,
+  "spec_draft_p_split": 0.5,
+  "draft_model": "",
+  "draft_gpu_layers": 0,
+  "threads_draft": 0,
+  "threads_batch_draft": 0,
+  "spec_draft_poll": false,
+  "fit": true,
+  "fit_target_mib": "",
+  "fit_ctx": 4096
 }
 ```
+
+Секции редактора на экране деталей модели:
+
+| Секция | Параметры |
+|--------|-----------|
+| **Basic** | Context Size, Threads |
+| **Model & Loading** | GPU Layers (+All), Tensor Split, NUMA, Split Mode, Main GPU, Devices, mlock, no_mmap |
+| **Context & Cache** | Batch Size, UBatch Size, Cache Type K/V, Flash Attention, Defrag Threshold |
+| **Sampling** | Samplers order, Seed, Temperature, Top-K, Top-P, Min-P, Repeat/Presence/Frequency Penalty, Mirostat |
+| **Server** | Parallel Slots, No Repack |
+| **Logging** | Verbose, Verbosity, Log File |
+| **Speculative Decoding** | Spec Type, Draft N Max/Min, P Split, Draft Model, Draft GPU Layers, Draft Threads, Draft Polling |
+| **Auto-fit** | Fit on/off, Fit Target, Fit Min Ctx |
+
+Большинство секций свёрнуты по умолчанию — раскрываются по клику.
 
 ## Technical notes
 
