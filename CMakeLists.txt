@@ -5,6 +5,19 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# ── Optimisation flags ──────────────────────────────────────────────────────
+if(CMAKE_BUILD_TYPE MATCHES "^Release$|^MinSizeRel$")
+  add_compile_options(-O2 -flto=auto -fvisibility=hidden -fomit-frame-pointer)
+  add_compile_options(-fdata-sections -ffunction-sections)
+  add_link_options(-flto=auto -Wl,--gc-sections -Wl,--as-needed)
+elseif(CMAKE_BUILD_TYPE MATCHES "^RelWithDebInfo$")
+  add_compile_options(-O2 -flto=auto -fvisibility=hidden -g)
+  add_compile_options(-fdata-sections -ffunction-sections)
+  add_link_options(-flto=auto -Wl,--gc-sections -Wl,--as-needed)
+else()
+  add_compile_options(-O0 -g0)
+endif()
+
 # ── Saucer ──────────────────────────────────────────────────────────────────
 include(FetchContent)
 FetchContent_Declare(
