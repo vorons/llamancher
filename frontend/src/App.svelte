@@ -9,21 +9,20 @@
   import SettingsDialog from '$lib/components/SettingsDialog.svelte';
   import type { ModelInfo } from '$lib/types';
 
-  onMount(async () => {
+  onMount(() => {
     // Load settings
-    try {
-      const kv = await api.settings();
+    api.settings().then((kv) => {
       settings.set({
         llama_server_path: kv.llama_server_path,
         models_dir: kv.models_dir,
         auto_start_server: kv.auto_start_server === 'true',
       });
-    } catch {
+    }).catch(() => {
       // Running outside saucer — use defaults
-    }
+    });
 
     // Initial model scan
-    await scanModels();
+    scanModels();
 
     // Refresh handler
     window.addEventListener('refresh-models', scanModels);

@@ -4,11 +4,11 @@
   import { api } from '$lib/saucer';
   import { toast } from 'svelte-sonner';
   import { cn } from '$lib/utils';
-  import Separator from '$lib/ui/separator.svelte';
-  import Label from '$lib/ui/label.svelte';
-  import Input from '$lib/ui/input.svelte';
-  import Switch from '$lib/ui/switch.svelte';
-  import Slider from '$lib/ui/slider.svelte';
+  import { Separator } from '$lib/ui/separator';
+  import { Label } from '$lib/ui/label';
+  import { Input } from '$lib/ui/input';
+  import { Switch } from '$lib/ui/switch';
+  import { Slider } from '$lib/ui/slider';
   import type { Preset } from '$lib/types';
 
   let preset = $state<Preset>({
@@ -70,7 +70,6 @@
           no_mmap: preset.no_mmap ? 'true' : 'false',
           flash_attn: preset.flash_attn ? 'true' : 'false',
         });
-        // Toast if model is running
         if ($serverStatus === 'running' && $serverModel === model?.name) {
           toast.info('Changes will apply after restart');
         }
@@ -85,7 +84,6 @@
     try {
       const status = await api.serverStatus();
       if (status.status === 'stopped') {
-        // Save current preset first
         await api.savePreset(model.name, {
           ctx_size: String(preset.ctx_size),
           threads: String(preset.threads),
@@ -208,10 +206,11 @@
           </div>
           <Slider
             id="gpu_layers"
+            type="single"
+            value={preset.gpu_layers}
+            onValueChange={(v) => { preset.gpu_layers = v; debouncedSave(); }}
             min={0}
             max={200}
-            value={preset.gpu_layers}
-            oninput={(e) => { preset.gpu_layers = parseInt(e.currentTarget.value); debouncedSave(); }}
           />
         </div>
 
@@ -239,11 +238,12 @@
           </div>
           <Slider
             id="temp"
+            type="single"
+            value={preset.temp}
+            onValueChange={(v) => { preset.temp = v; debouncedSave(); }}
             min={0}
             max={2}
             step={0.01}
-            value={Math.round(preset.temp * 100)}
-            oninput={(e) => { preset.temp = parseInt(e.currentTarget.value) / 100; debouncedSave(); }}
           />
         </div>
 
@@ -264,10 +264,12 @@
             </div>
             <Slider
               id="top_p"
+              type="single"
+              value={preset.top_p}
+              onValueChange={(v) => { preset.top_p = v; debouncedSave(); }}
               min={0}
-              max={100}
-              value={Math.round(preset.top_p * 100)}
-              oninput={(e) => { preset.top_p = parseInt(e.currentTarget.value) / 100; debouncedSave(); }}
+              max={1}
+              step={0.01}
             />
           </div>
         </div>
@@ -280,13 +282,13 @@
         <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Flags</h3>
 
         <div class="space-y-3">
-          {#each [{ key: 'mlock', label: 'mlock' }, { key: 'no_mmap', label: 'no_mmap' }, { key: 'flash_attn', label: 'flash_attn' }] as flag}
+          {#each [{ key: 'mlock' as const, label: 'mlock' }, { key: 'no_mmap' as const, label: 'no_mmap' }, { key: 'flash_attn' as const, label: 'flash_attn' }] as flag}
             <div class="flex items-center justify-between">
               <Label for={flag.key}>{flag.label}</Label>
               <Switch
-                checked={preset[flag.key as keyof Preset] as boolean}
-                onchange={() => {
-                  (preset[flag.key as keyof Preset] as boolean) = !(preset[flag.key as keyof Preset] as boolean);
+                checked={preset[flag.key]}
+                onCheckedChange={(c) => {
+                  preset[flag.key] = c;
                   debouncedSave();
                 }}
               />

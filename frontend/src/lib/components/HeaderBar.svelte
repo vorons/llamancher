@@ -2,7 +2,7 @@
   import { view, selectedModel, serverStatus, serverModel, settingsOpen } from '$lib/stores.svelte';
   import { ArrowLeft, RefreshCw, Settings, Minus, Square, X } from '@lucide/svelte';
   import { cn } from '$lib/utils';
-  import Separator from '$lib/ui/separator.svelte';
+  import { Separator } from '$lib/ui/separator';
 
   function handleRefresh() {
     window.dispatchEvent(new CustomEvent('refresh-models'));
