@@ -293,13 +293,13 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="ctx_size" class="text-sm">Context Size</Label>
-          <Input id="ctx_size" type="number" class="w-28" value={String(preset.ctx_size)}
+          <Input id="ctx_size" type="number" class="w-36" value={String(preset.ctx_size)}
             oninput={(e) => { preset.ctx_size = parseInt(e.currentTarget.value) || 2048; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="threads" class="text-sm">Threads</Label>
-          <Input id="threads" type="number" class="w-28" value={String(preset.threads)}
+          <Input id="threads" type="number" class="w-36" value={String(preset.threads)}
             oninput={(e) => { preset.threads = parseInt(e.currentTarget.value) || 4; debouncedSave(); }} />
         </div>
       </div>
@@ -337,7 +337,7 @@
             <Label for="tensor_split" class="text-sm">Tensor Split</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">GPU memory distribution ratios</p>
           </div>
-          <Input id="tensor_split" placeholder="e.g. 8,8" class="w-32" value={preset.tensor_split}
+          <Input id="tensor_split" placeholder="e.g. 8,8" class="w-36" value={preset.tensor_split}
             oninput={(e) => { preset.tensor_split = e.currentTarget.value; debouncedSave(); }} />
         </div>
 
@@ -372,7 +372,7 @@
             <Label for="main_gpu" class="text-sm">Main GPU</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">Main GPU when split-mode is none</p>
           </div>
-          <Input id="main_gpu" type="number" placeholder="-1" class="w-28" value={String(preset.main_gpu)}
+          <Input id="main_gpu" type="number" placeholder="-1" class="w-36" value={String(preset.main_gpu)}
             oninput={(e) => { preset.main_gpu = parseInt(e.currentTarget.value) || -1; debouncedSave(); }} />
         </div>
 
@@ -404,13 +404,13 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="batch_size" class="text-sm">Batch Size</Label>
-          <Input id="batch_size" type="number" class="w-28" value={String(preset.batch_size)}
+          <Input id="batch_size" type="number" class="w-36" value={String(preset.batch_size)}
             oninput={(e) => { preset.batch_size = parseInt(e.currentTarget.value) || 2048; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="ubatch_size" class="text-sm">UBatch Size</Label>
-          <Input id="ubatch_size" type="number" class="w-28" value={String(preset.ubatch_size)}
+          <Input id="ubatch_size" type="number" class="w-36" value={String(preset.ubatch_size)}
             oninput={(e) => { preset.ubatch_size = parseInt(e.currentTarget.value) || 512; debouncedSave(); }} />
         </div>
 
@@ -438,7 +438,7 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="flash_attn" class="text-sm">Flash Attention</Label>
-          <NativeSelect id="flash_attn" class="w-28" value={preset.flash_attn ? 'on' : 'off'} onchange={(e) => { preset.flash_attn = e.currentTarget.value === 'on'; debouncedSave(); }}>
+          <NativeSelect id="flash_attn" class="w-36" value={preset.flash_attn ? 'on' : 'off'} onchange={(e) => { preset.flash_attn = e.currentTarget.value === 'on'; debouncedSave(); }}>
             <NativeSelectOption value="off">Off</NativeSelectOption>
             <NativeSelectOption value="on">On</NativeSelectOption>
           </NativeSelect>
@@ -446,7 +446,7 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="defrag_thold" class="text-sm">Defrag Threshold</Label>
-          <Input id="defrag_thold" type="number" placeholder="-1" class="w-28" value={String(preset.defrag_thold)}
+          <Input id="defrag_thold" type="number" placeholder="-1" class="w-36" value={String(preset.defrag_thold)}
             oninput={(e) => { preset.defrag_thold = parseInt(e.currentTarget.value) || -1; debouncedSave(); }} />
         </div>
       </div>
@@ -462,13 +462,13 @@
             <Label for="samplers" class="text-sm">Samplers</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">Sampler chain order (semicolon-separated)</p>
           </div>
-          <Input id="samplers" placeholder="top_k;top_p;temperature" class="w-40" value={preset.samplers}
+          <Input id="samplers" placeholder="top_k;top_p;temperature" class="w-36" value={preset.samplers}
             oninput={(e) => { preset.samplers = e.currentTarget.value; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="seed" class="text-sm">Seed</Label>
-          <Input id="seed" type="number" placeholder="-1" class="w-28" value={String(preset.seed)}
+          <Input id="seed" type="number" placeholder="-1" class="w-36" value={String(preset.seed)}
             oninput={(e) => { preset.seed = parseInt(e.currentTarget.value) || -1; debouncedSave(); }} />
         </div>
 
@@ -495,7 +495,7 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="top_k" class="text-sm">Top K</Label>
-          <Input id="top_k" type="number" class="w-28" value={String(preset.top_k)}
+          <Input id="top_k" type="number" class="w-36" value={String(preset.top_k)}
             oninput={(e) => { preset.top_k = parseInt(e.currentTarget.value) || 40; debouncedSave(); }} />
         </div>
 
@@ -525,19 +525,19 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="repeat_penalty" class="text-sm">Repeat Penalty</Label>
-          <Input id="repeat_penalty" type="number" step="0.01" class="w-28" value={String(preset.repeat_penalty)}
+          <Input id="repeat_penalty" type="number" step="0.01" class="w-36" value={String(preset.repeat_penalty)}
             oninput={(e) => { preset.repeat_penalty = parseFloat(e.currentTarget.value) || 1.0; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="presence_penalty" class="text-sm">Presence Penalty</Label>
-          <Input id="presence_penalty" type="number" step="0.01" class="w-28" value={String(preset.presence_penalty)}
+          <Input id="presence_penalty" type="number" step="0.01" class="w-36" value={String(preset.presence_penalty)}
             oninput={(e) => { preset.presence_penalty = parseFloat(e.currentTarget.value) || 0; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="frequency_penalty" class="text-sm">Frequency Penalty</Label>
-          <Input id="frequency_penalty" type="number" step="0.01" class="w-28" value={String(preset.frequency_penalty)}
+          <Input id="frequency_penalty" type="number" step="0.01" class="w-36" value={String(preset.frequency_penalty)}
             oninput={(e) => { preset.frequency_penalty = parseFloat(e.currentTarget.value) || 0; debouncedSave(); }} />
         </div>
       </div>
@@ -550,7 +550,7 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="parallel" class="text-sm">Parallel Slots</Label>
-          <Input id="parallel" type="number" min="1" class="w-28" value={String(preset.parallel)}
+          <Input id="parallel" type="number" min="1" class="w-36" value={String(preset.parallel)}
             oninput={(e) => { preset.parallel = parseInt(e.currentTarget.value) || 1; debouncedSave(); }} />
         </div>
 
@@ -573,13 +573,13 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="verbosity" class="text-sm">Verbosity</Label>
-          <Input id="verbosity" type="number" min="0" max="5" class="w-28" value={String(preset.verbosity)}
+          <Input id="verbosity" type="number" min="0" max="5" class="w-36" value={String(preset.verbosity)}
             oninput={(e) => { preset.verbosity = Math.min(5, Math.max(0, parseInt(e.currentTarget.value) || 0)); debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="log_file" class="text-sm">Log File</Label>
-          <Input id="log_file" placeholder="/path/to/llama.log" class="w-40" value={preset.log_file}
+          <Input id="log_file" placeholder="/path/to/llama.log" class="w-36" value={preset.log_file}
             oninput={(e) => { preset.log_file = e.currentTarget.value; debouncedSave(); }} />
         </div>
       </div>
@@ -595,7 +595,7 @@
             <Label for="spec_type" class="text-sm">Spec Type</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">Speculative decoding method</p>
           </div>
-          <NativeSelect id="spec_type" class="w-40" value={preset.spec_type} onchange={(e) => { preset.spec_type = e.currentTarget.value; debouncedSave(); }}>
+          <NativeSelect id="spec_type" class="w-36" value={preset.spec_type} onchange={(e) => { preset.spec_type = e.currentTarget.value; debouncedSave(); }}>
             <NativeSelectOption value="">Off</NativeSelectOption>
             <NativeSelectOption value="draft-mtp">Draft MTP</NativeSelectOption>
             <NativeSelectOption value="draft-model">Draft Model</NativeSelectOption>
@@ -608,43 +608,43 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="spec_draft_n_max" class="text-sm">Draft N Max</Label>
-          <Input id="spec_draft_n_max" type="number" class="w-28" value={String(preset.spec_draft_n_max)}
+          <Input id="spec_draft_n_max" type="number" class="w-36" value={String(preset.spec_draft_n_max)}
             oninput={(e) => { preset.spec_draft_n_max = parseInt(e.currentTarget.value) || 16; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="spec_draft_n_min" class="text-sm">Draft N Min</Label>
-          <Input id="spec_draft_n_min" type="number" class="w-28" value={String(preset.spec_draft_n_min)}
+          <Input id="spec_draft_n_min" type="number" class="w-36" value={String(preset.spec_draft_n_min)}
             oninput={(e) => { preset.spec_draft_n_min = parseInt(e.currentTarget.value) || 0; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="spec_draft_p_split" class="text-sm">P Split</Label>
-          <Input id="spec_draft_p_split" type="number" step="0.01" class="w-28" value={String(preset.spec_draft_p_split)}
+          <Input id="spec_draft_p_split" type="number" step="0.01" class="w-36" value={String(preset.spec_draft_p_split)}
             oninput={(e) => { preset.spec_draft_p_split = parseFloat(e.currentTarget.value) || 0.5; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="draft_model" class="text-sm">Draft Model</Label>
-          <Input id="draft_model" placeholder="/path/to/draft.gguf" class="w-40" value={preset.draft_model}
+          <Input id="draft_model" placeholder="/path/to/draft.gguf" class="w-36" value={preset.draft_model}
             oninput={(e) => { preset.draft_model = e.currentTarget.value; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="draft_gpu_layers" class="text-sm">Draft GPU Layers</Label>
-          <Input id="draft_gpu_layers" type="number" placeholder="-1" class="w-28" value={String(preset.draft_gpu_layers)}
+          <Input id="draft_gpu_layers" type="number" placeholder="-1" class="w-36" value={String(preset.draft_gpu_layers)}
             oninput={(e) => { preset.draft_gpu_layers = parseInt(e.currentTarget.value) || 0; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="threads_draft" class="text-sm">Draft Threads</Label>
-          <Input id="threads_draft" type="number" placeholder="0" class="w-28" value={String(preset.threads_draft)}
+          <Input id="threads_draft" type="number" placeholder="0" class="w-36" value={String(preset.threads_draft)}
             oninput={(e) => { preset.threads_draft = parseInt(e.currentTarget.value) || 0; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="threads_batch_draft" class="text-sm">Draft Batch Threads</Label>
-          <Input id="threads_batch_draft" type="number" placeholder="0" class="w-28" value={String(preset.threads_batch_draft)}
+          <Input id="threads_batch_draft" type="number" placeholder="0" class="w-36" value={String(preset.threads_batch_draft)}
             oninput={(e) => { preset.threads_batch_draft = parseInt(e.currentTarget.value) || 0; debouncedSave(); }} />
         </div>
 
@@ -670,13 +670,13 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="fit_target_mib" class="text-sm">Fit Target</Label>
-          <Input id="fit_target_mib" placeholder="1024" class="w-28" value={preset.fit_target_mib}
+          <Input id="fit_target_mib" placeholder="1024" class="w-36" value={preset.fit_target_mib}
             oninput={(e) => { preset.fit_target_mib = e.currentTarget.value; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="fit_ctx" class="text-sm">Fit Min Ctx</Label>
-          <Input id="fit_ctx" type="number" class="w-28" value={String(preset.fit_ctx)}
+          <Input id="fit_ctx" type="number" class="w-36" value={String(preset.fit_ctx)}
             oninput={(e) => { preset.fit_ctx = parseInt(e.currentTarget.value) || 4096; debouncedSave(); }} />
         </div>
       </div>
