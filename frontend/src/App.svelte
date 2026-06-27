@@ -63,10 +63,10 @@
     } catch {
       // Mock data for browser dev
       models.set([
-        { name: 'llama-3.2-3b-instruct-q4_k_m', path: '', quantization: 'Q4_K_M', size: '1.98 GB' },
-        { name: 'mistral-7b-instruct-v0.3-q5_k_m', path: '', quantization: 'Q5_K_M', size: '4.47 GB' },
-        { name: 'phi-3-mini-4k-instruct-q4_0', path: '', quantization: 'Q4_0', size: '2.23 GB' },
-        { name: 'deepseek-coder-6.7b-instruct-q8_0', path: '', quantization: 'Q8_0', size: '6.85 GB' },
+        { name: 'llama-3.2-3b-instruct-q4_k_m', path: '', architecture: 'llama', quantization: 'Q4_K_M', size: '1.98 GB', block_count: '28', context_length: '8192', file_type: '15' },
+        { name: 'mistral-7b-instruct-v0.3-q5_k_m', path: '', architecture: 'mistral', quantization: 'Q5_K_M', size: '4.47 GB', block_count: '32', context_length: '32768', file_type: '17' },
+        { name: 'phi-3-mini-4k-instruct-q4_0', path: '', architecture: 'phi3', quantization: 'Q4_0', size: '2.23 GB', block_count: '32', context_length: '4096', file_type: '2' },
+        { name: 'deepseek-coder-6.7b-instruct-q8_0', path: '', architecture: 'deepseek2', quantization: 'Q8_0', size: '6.85 GB', block_count: '30', context_length: '16384', file_type: '10' },
       ]);
     }
   }

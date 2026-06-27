@@ -87,8 +87,12 @@ int main(int argc, char* argv[]) {
         result.push_back({
           {"name",         m.name},
           {"path",         m.path},
+          {"architecture", m.architecture},
           {"quantization", m.quantization},
           {"size",         std::format("{:.2f} GB", size_gb)},
+          {"block_count",  std::to_string(m.block_count)},
+          {"context_length", std::to_string(m.context_length)},
+          {"file_type",    std::to_string(m.file_type)},
         });
       }
       return result;

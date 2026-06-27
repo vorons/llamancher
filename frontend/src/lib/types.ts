@@ -1,8 +1,12 @@
 export interface ModelInfo {
   name: string;
   path: string;
+  architecture: string;
   quantization: string;
   size: string;
+  block_count: string;
+  context_length: string;
+  file_type: string;
 }
 
 export interface Preset {

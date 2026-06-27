@@ -79,6 +79,10 @@
           <div class="min-w-0 flex-1">
             <div class="text-sm font-medium truncate">{model.name}</div>
             <div class="text-xs text-muted-foreground mt-0.5">
+              {#if model.architecture}
+                <span class="font-mono uppercase tracking-tight text-[10px]">{model.architecture}</span>
+                <span class="mx-1.5 opacity-40">·</span>
+              {/if}
               {model.quantization} · {model.size}
             </div>
           </div>
