@@ -14,3 +14,6 @@ export const settingsOpen = writable(false);
 
 // View state
 export const view = writable<'list' | 'detail'>('list');
+
+// Scanning state
+export const scanning = writable(false);

@@ -81,6 +81,19 @@ int main(int argc, char* argv[]) {
     webview->expose("scan_models", [model_mgr, settings]() {
       *model_mgr = ModelManager(settings->models_dir);
       auto models = model_mgr->scan();
+
+      // For models without a preset, create one with GGUF metadata cached
+      for (auto& m : models) {
+        if (!Preset::exists(m.name)) {
+          Preset p;
+          p.architecture = m.architecture;
+          p.block_count = m.block_count;
+          p.context_length = m.context_length;
+          p.file_type = m.file_type;
+          p.save(m.name);
+        }
+      }
+
       std::vector<std::map<std::string, std::string>> result;
       for (auto& m : models) {
         auto size_gb = static_cast<double>(m.file_size) / (1024.0 * 1024.0 * 1024.0);
