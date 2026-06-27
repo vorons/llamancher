@@ -142,23 +142,21 @@
         </div>
         <button
           class={cn(
-            'flex items-center gap-1.5 px-4 h-9 rounded-md text-sm font-medium transition-colors',
+            'flex items-center justify-center h-8 w-8 rounded-md transition-colors shrink-0',
             isActive
               ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90',
+              : 'bg-secondary hover:bg-accent text-foreground',
           )}
           onclick={handlePlayStop}
           disabled={serverLoading}
+          aria-label={isActive ? 'Stop server' : 'Start server'}
         >
           {#if serverLoading || isStarting}
-            <Loader2 size={14} class="animate-spin" />
-            <span>{isStarting ? 'Starting…' : 'Stopping…'}</span>
+            <Loader2 size={16} class="animate-spin" />
           {:else if isActive}
             <Square size={14} />
-            <span>Stop</span>
           {:else}
             <Play size={14} />
-            <span>Start</span>
           {/if}
         </button>
       </div>
