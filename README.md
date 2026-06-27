@@ -1,112 +1,157 @@
 # llamancher
 
-> Desktop app for managing and launching LLM models (GGUF) via `llama-server`.
+> Desktop GUI for managing and launching GGUF models via `llama-server`.
 
-Built with [Saucer 8](https://saucer.app) (C++ webview), [Svelte 5](https://svelte.dev), [shadcn-svelte](https://shadcn-svelte.com) components, and [Tailwind CSS 4](https://tailwindcss.com).
+Scans a directory for `.gguf` files, lets you configure per-model presets (context size, GPU layers, sampling params), and launches `llama-server` as a child process — all from a borderless window with a dark theme.
 
-## Screens
+![screenshot placeholder](https://img.shields.io/badge/status-alpha-orange)
+![binary size](https://img.shields.io/badge/size-888%C2%A0KB-brightgreen)
 
-**Model List** — browse GGUF files in your models directory.  
-**Model Detail** — edit per-model launch presets, start/stop the server.  
-**Settings** — configure `llama-server` path and models directory.
+## Features
 
-## Prerequisites
+- **Model browser** — scans a directory for GGUF files, detects quantization from filename
+- **Per-model presets** — ctx size, threads, GPU layers, temperature, top-k/p, flash attention, mlock, no-mmap
+- **Server lifecycle** — start/stop `llama-server`, health polling, status displayed in UI
+- **Persistent settings** — `~/.config/llamancher/settings.json`
+- **Persistent presets** — `~/.llamancher/models/<name>.preset.json`
+- **Borderless window** — custom title bar via Svelte, `window::decoration::partial`
+- **Embedded frontend** — production builds bundle the Svelte app into the binary (no extra files)
 
-- **C++23 compiler** (GCC 14+ or Clang 18+)
-- **CMake 3.25+**
-- **Node.js 20+** + **pnpm**
-- **Linux**: WebKitGTK 4.1, GTK4, libsoup3, pkg-config
+## Requirements
+
+| Dependency | Minimum | Notes |
+|-----------|---------|-------|
+| GCC | 13+ | GCC 16 (Fedora Rawhide) supported; `std::function` workaround via virtual observer |
+| CMake | 3.25+ | |
+| WebKitGTK | 2.44+ | Bundled with Saucer 8 |
+| GTK | 4.16+ | Saucer 8 requirement |
+| pnpm | 9+ | For frontend build |
+| Node.js | 22+ | For frontend build |
+| llama-server | any | From [llama.cpp](https://github.com/ggml-org/llama.cpp) releases |
+
+System dependencies on Fedora:
 
 ```bash
-# Fedora
-sudo dnf install webkitgtk6.0-devel gtk4-devel libsoup3-devel
-
-# Ubuntu / Debian
-sudo apt install libwebkitgtk-6.0-dev libgtk-4-dev libsoup-3.0-dev
+sudo dnf install webkitgtk6.0-devel gtk4-devel cmake gcc-c++
 ```
+
+### Optional
+
+- `curl` — dev mode health check in `dev.sh`
 
 ## Quick start
 
 ```bash
-# Build everything
+# 1. Clone and enter
+git clone https://github.com/your/llamancher
+cd llamancher
+
+# 2. Build (frontend + backend, release)
 ./scripts/build.sh
+
+# 3. Run
+./build/llamancher
+
+# Dev mode (frontend HMR on :5173)
+./scripts/dev.sh
+```
+
+Or manually:
+
+```bash
+# Build frontend
+cd frontend && pnpm install && pnpm run build && cd ..
+
+# Configure & build backend
+cmake -B build --preset release
+cmake --build build --parallel
 
 # Run
 ./build/llamancher
 ```
 
-### Development
+## Usage
 
-```bash
-# Terminal 1: Vite dev server
-cd frontend && pnpm dev
-
-# Terminal 2: C++ binary that loads from Vite
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build
-./build/llamancher --dev
-```
-
-Or use the combined script:
-
-```bash
-./scripts/dev.sh
-```
+1. Set the **models directory** and **llama-server path** in Settings (gear icon in title bar)
+2. Click **Scan** to discover GGUF models
+3. Click a model to edit its preset (sampling params, GPU layers, etc.)
+4. Press **Launch** to start `llama-server` with that model
+5. `llama-server` is now available at `http://127.0.0.1:8080` — connect with any OpenAI-compatible client (e.g. [Continue](https://continue.dev), [Open WebUI](https://openwebui.com))
 
 ## Project structure
 
 ```
 llamancher/
-├── backend/                    # C++ source (Saucer IPC host)
-│   ├── main.cpp                # Entry point, window, exposed API
-│   ├── model_manager.h/cpp     # GGUF file scanner
-│   ├── server_manager.h/cpp    # llama-server child process
-│   ├── settings.h/cpp          # Persistent settings (~/.config/llamancher/)
-│   └── preset.h/cpp            # Per-model presets (~/.llamancher/models/)
-├── frontend/                   # Svelte 5 + Vite + Tailwind CSS 4
-│   ├── src/
-│   │   ├── lib/
-│   │   │   ├── components/     # App components (HeaderBar, ModelList, …)
-│   │   │   ├── ui/             # shadcn-style primitives (button, dialog, …)
-│   │   │   ├── types.ts        # Shared TypeScript types
-│   │   │   ├── stores.svelte.ts# Svelte stores for state
-│   │   │   ├── saucer.ts       # IPC wrapper for C++ → JS bridge
-│   │   │   └── utils.ts        # cn(), debounce(), …
-│   │   ├── App.svelte          # Root component
-│   │   └── main.ts             # Entry point
-│   └── vite.config.ts
-├── CMakeLists.txt              # Root CMake (builds C++ + embeds frontend)
+├── backend/               # C++22, Saucer 8
+│   ├── main.cpp           # Window, IPC API, status observer
+│   ├── model_manager.h/cpp   # .gguf scanner
+│   ├── server_manager.h/cpp  # Child process + health polling
+│   ├── preset.h/cpp          # Per-model presets (JSON)
+│   └── settings.h/cpp        # App settings (JSON)
+├── frontend/              # Svelte 5 + TypeScript + Tailwind 4
+│   └── src/
+│       ├── App.svelte
+│       ├── lib/
+│       │   ├── components/   # HeaderBar, ModelList, ModelDetail, SettingsDialog
+│       │   ├── ui/           # button, dialog, input, slider, switch, etc.
+│       │   ├── saucer.ts     # IPC wrapper
+│       │   ├── stores.svelte.ts
+│       │   └── types.ts
+│       └── main.ts
 ├── scripts/
-│   ├── build.sh                # Full production build
-│   └── dev.sh                  # Dev mode (Vite + C++ backend)
+│   ├── build.sh            # Production build
+│   └── dev.sh              # Development mode (HMR)
+├── CMakeLists.txt
+├── CMakePresets.json
 └── README.md
+```
+
+## Build presets
+
+| Preset | Optimisation | Binary size |
+|--------|-------------|-------------|
+| `release` | `-O2 -flto=auto -fvisibility=hidden` + gc-sections + strip | ~888 KB |
+| `debug` | `-O0 -g0` | ~33 MB |
+
+```bash
+cmake --build build --preset release   # release
+cmake --build build --preset debug     # debug (fast iteration)
 ```
 
 ## Configuration
 
-| Setting | Path |
-|---------|------|
-| App settings | `~/.config/llamancher/settings.json` |
-| Model presets | `~/.llamancher/models/<name>.preset.json` |
-| llama-server (default) | `~/.llamancher/server/<version>/llama-server` |
+**`~/.config/llamancher/settings.json`**
 
-## Architecture
+```json
+{
+  "llama_server_path": "llama-server",
+  "models_dir": "/home/user/models",
+  "auto_start_server": false
+}
+```
 
+**`~/.llamancher/models/<name>.preset.json`**
+
+```json
+{
+  "ctx_size": 4096,
+  "threads": 8,
+  "gpu_layers": 35,
+  "temp": 0.7,
+  "top_k": 40,
+  "top_p": 0.9,
+  "flash_attn": true,
+  "mlock": true,
+  "no_mmap": false
+}
 ```
-┌─────────────┐  saucer IPC   ┌──────────────┐
-│  Svelte UI  │ ←──────────→  │  C++ Backend │
-│  (webview)  │  exposed API  │  (saucer)    │
-└─────────────┘               └──────┬───────┘
-                                     │ fork/exec
-                                     ▼
-                             ┌──────────────┐
-                             │ llama-server │
-                             │  (child PID) │
-                             └──────────────┘
-                                     │ HTTP health
-                                     ▼
-                             ┌──────────────┐
-                             │  LLM model   │
-                             │  (GGUF file) │
-                             └──────────────┘
-```
+
+## Technical notes
+
+- **GCC 16 compatibility**: Saucer 8 callbacks use `std::function`, which triggers `consteval` errors in GCC 16. The codebase avoids this by using a virtual `ServerObserver` interface instead of function-based callbacks for server status updates.
+- **Binary size**: Aggressive LTO + sections garbage collection + stripping brings the binary to ~888 KB (was 33 MB in debug).
+- **Frontend embedding**: `saucer_embed()` in CMake bundles `dist/` into the binary; no external files at runtime.
+
+## License
+
+MIT
