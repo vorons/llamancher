@@ -252,7 +252,7 @@
         </div>
         <button
           class={cn(
-            'flex items-center justify-center h-8 w-8 rounded-md transition-all active:scale-90 shrink-0',
+            'flex items-center justify-center h-8 w-8 rounded-md transition-all active:scale-95 shrink-0',
             isActive
               ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
               : 'bg-secondary hover:bg-accent text-foreground',
