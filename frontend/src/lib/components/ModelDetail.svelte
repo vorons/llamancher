@@ -9,6 +9,7 @@
   import { Input } from '$lib/ui/input';
   import { Switch } from '$lib/ui/switch';
   import { Slider } from '$lib/ui/slider';
+  import { NativeSelect, NativeSelectOption } from '$lib/ui/native-select';
   import type { Preset } from '$lib/types';
 
   let preset = $state<Preset>({
@@ -345,13 +346,11 @@
             <Label for="numa" class="text-sm">NUMA</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">NUMA memory allocation strategy</p>
           </div>
-          <select id="numa"
-            class="flex h-8 w-36 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-sm transition-colors focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 focus-visible:outline-none"
-            value={preset.numa} onchange={(e) => { preset.numa = e.currentTarget.value; debouncedSave(); }}>
-            <option value="">Off</option>
-            <option value="distribute">Distribute</option>
-            <option value="isolate">Isolate</option>
-          </select>
+          <NativeSelect id="numa" class="w-36" value={preset.numa} onchange={(e) => { preset.numa = e.currentTarget.value; debouncedSave(); }}>
+            <NativeSelectOption value="">Off</NativeSelectOption>
+            <NativeSelectOption value="distribute">Distribute</NativeSelectOption>
+            <NativeSelectOption value="isolate">Isolate</NativeSelectOption>
+          </NativeSelect>
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
@@ -359,15 +358,13 @@
             <Label for="split_mode" class="text-sm">Split Mode</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">How to split model across multiple GPUs</p>
           </div>
-          <select id="split_mode"
-            class="flex h-8 w-36 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-sm transition-colors focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 focus-visible:outline-none"
-            value={preset.split_mode} onchange={(e) => { preset.split_mode = e.currentTarget.value; debouncedSave(); }}>
-            <option value="">Default</option>
-            <option value="none">None</option>
-            <option value="layer">Layer</option>
-            <option value="row">Row</option>
-            <option value="tensor">Tensor</option>
-          </select>
+          <NativeSelect id="split_mode" class="w-36" value={preset.split_mode} onchange={(e) => { preset.split_mode = e.currentTarget.value; debouncedSave(); }}>
+            <NativeSelectOption value="">Default</NativeSelectOption>
+            <NativeSelectOption value="none">None</NativeSelectOption>
+            <NativeSelectOption value="layer">Layer</NativeSelectOption>
+            <NativeSelectOption value="row">Row</NativeSelectOption>
+            <NativeSelectOption value="tensor">Tensor</NativeSelectOption>
+          </NativeSelect>
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
@@ -419,39 +416,32 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="cache_type_k" class="text-sm">Cache Type K</Label>
-          <select id="cache_type_k"
-            class="flex h-8 w-36 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-sm transition-colors focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 focus-visible:outline-none"
-            value={preset.cache_type_k} onchange={(e) => { preset.cache_type_k = e.currentTarget.value; debouncedSave(); }}>
-            <option value="">Default (f16)</option>
-            <option value="f16">f16</option>
-            <option value="q8_0">q8_0</option>
-            <option value="q4_0">q4_0</option>
-            <option value="q4_1">q4_1</option>
-          </select>
+          <NativeSelect id="cache_type_k" class="w-36" value={preset.cache_type_k} onchange={(e) => { preset.cache_type_k = e.currentTarget.value; debouncedSave(); }}>
+            <NativeSelectOption value="">Default (f16)</NativeSelectOption>
+            <NativeSelectOption value="f16">f16</NativeSelectOption>
+            <NativeSelectOption value="q8_0">q8_0</NativeSelectOption>
+            <NativeSelectOption value="q4_0">q4_0</NativeSelectOption>
+            <NativeSelectOption value="q4_1">q4_1</NativeSelectOption>
+          </NativeSelect>
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="cache_type_v" class="text-sm">Cache Type V</Label>
-          <select id="cache_type_v"
-            class="flex h-8 w-36 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-sm transition-colors focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 focus-visible:outline-none"
-            value={preset.cache_type_v} onchange={(e) => { preset.cache_type_v = e.currentTarget.value; debouncedSave(); }}>
-            <option value="">Default (f16)</option>
-            <option value="f16">f16</option>
-            <option value="q8_0">q8_0</option>
-            <option value="q4_0">q4_0</option>
-            <option value="q4_1">q4_1</option>
-          </select>
+          <NativeSelect id="cache_type_v" class="w-36" value={preset.cache_type_v} onchange={(e) => { preset.cache_type_v = e.currentTarget.value; debouncedSave(); }}>
+            <NativeSelectOption value="">Default (f16)</NativeSelectOption>
+            <NativeSelectOption value="f16">f16</NativeSelectOption>
+            <NativeSelectOption value="q8_0">q8_0</NativeSelectOption>
+            <NativeSelectOption value="q4_0">q4_0</NativeSelectOption>
+            <NativeSelectOption value="q4_1">q4_1</NativeSelectOption>
+          </NativeSelect>
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="flash_attn" class="text-sm">Flash Attention</Label>
-          <select id="flash_attn"
-            class="flex h-8 w-28 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-sm transition-colors focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 focus-visible:outline-none"
-            value={preset.flash_attn ? 'on' : 'off'}
-            onchange={(e) => { preset.flash_attn = e.currentTarget.value === 'on'; debouncedSave(); }}>
-            <option value="off">Off</option>
-            <option value="on">On</option>
-          </select>
+          <NativeSelect id="flash_attn" class="w-28" value={preset.flash_attn ? 'on' : 'off'} onchange={(e) => { preset.flash_attn = e.currentTarget.value === 'on'; debouncedSave(); }}>
+            <NativeSelectOption value="off">Off</NativeSelectOption>
+            <NativeSelectOption value="on">On</NativeSelectOption>
+          </NativeSelect>
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
@@ -484,13 +474,11 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="mirostat" class="text-sm">Mirostat</Label>
-          <select id="mirostat"
-            class="flex h-8 w-36 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-sm transition-colors focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 focus-visible:outline-none"
-            value={preset.mirostat} onchange={(e) => { preset.mirostat = parseInt(e.currentTarget.value) || 0; debouncedSave(); }}>
-            <option value="0">Off</option>
-            <option value="1">Mirostat v1</option>
-            <option value="2">Mirostat v2</option>
-          </select>
+          <NativeSelect id="mirostat" class="w-36" value={String(preset.mirostat)} onchange={(e) => { preset.mirostat = parseInt(e.currentTarget.value) || 0; debouncedSave(); }}>
+            <NativeSelectOption value="0">Off</NativeSelectOption>
+            <NativeSelectOption value="1">Mirostat v1</NativeSelectOption>
+            <NativeSelectOption value="2">Mirostat v2</NativeSelectOption>
+          </NativeSelect>
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
@@ -607,17 +595,15 @@
             <Label for="spec_type" class="text-sm">Spec Type</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">Speculative decoding method</p>
           </div>
-          <select id="spec_type"
-            class="flex h-8 w-40 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-sm transition-colors focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 focus-visible:outline-none"
-            value={preset.spec_type} onchange={(e) => { preset.spec_type = e.currentTarget.value; debouncedSave(); }}>
-            <option value="">Off</option>
-            <option value="draft-mtp">Draft MTP</option>
-            <option value="draft-model">Draft Model</option>
-            <option value="ngram-simple">N-gram Simple</option>
-            <option value="ngram-map-k">N-gram Map K</option>
-            <option value="ngram-map-k4v">N-gram Map K4V</option>
-            <option value="ngram-mod">N-gram Mod</option>
-          </select>
+          <NativeSelect id="spec_type" class="w-40" value={preset.spec_type} onchange={(e) => { preset.spec_type = e.currentTarget.value; debouncedSave(); }}>
+            <NativeSelectOption value="">Off</NativeSelectOption>
+            <NativeSelectOption value="draft-mtp">Draft MTP</NativeSelectOption>
+            <NativeSelectOption value="draft-model">Draft Model</NativeSelectOption>
+            <NativeSelectOption value="ngram-simple">N-gram Simple</NativeSelectOption>
+            <NativeSelectOption value="ngram-map-k">N-gram Map K</NativeSelectOption>
+            <NativeSelectOption value="ngram-map-k4v">N-gram Map K4V</NativeSelectOption>
+            <NativeSelectOption value="ngram-mod">N-gram Mod</NativeSelectOption>
+          </NativeSelect>
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
