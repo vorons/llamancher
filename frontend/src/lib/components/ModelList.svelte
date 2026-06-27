@@ -70,7 +70,7 @@
       {#each $models as model (model.name)}
         <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
         <div
-          class="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-accent/50 cursor-pointer transition-colors"
+          class="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-accent/50 hover:-translate-y-0.5 hover:shadow-md cursor-pointer transition-all duration-150"
           onclick={() => selectModel(model)}
           onkeydown={(e) => { if (e.key === 'Enter') selectModel(model); }}
           role="button"
@@ -89,7 +89,7 @@
 
           <button
             class={cn(
-              'flex items-center justify-center h-8 w-8 rounded-md transition-colors shrink-0 ml-3',
+              'flex items-center justify-center h-8 w-8 rounded-md transition-all active:scale-90 shrink-0 ml-3',
               isRunningModel(model.name)
                 ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
                 : 'bg-secondary hover:bg-accent text-foreground',

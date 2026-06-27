@@ -37,7 +37,7 @@
   <div class="flex items-center gap-2" data-webview-ignore>
     {#if $view === 'detail'}
       <button
-        class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+        class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all active:scale-90"
         onclick={goBack}
         data-webview-ignore
       >
@@ -45,7 +45,7 @@
       </button>
     {:else}
       <button
-        class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+        class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all active:scale-90"
         onclick={handleRefresh}
         disabled={$scanning}
         data-webview-ignore
@@ -70,7 +70,7 @@
   <!-- Right section -->
   <div class="flex items-center gap-2" data-webview-ignore>
     <button
-      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all active:scale-90"
       onclick={() => settingsOpen.set(true)}
       data-webview-ignore
     >
@@ -80,21 +80,21 @@
     <Separator orientation="vertical" class="h-5" />
 
     <button
-      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all active:scale-90"
       data-webview-minimize
       data-webview-ignore
     >
       <Minus size={16} />
     </button>
     <button
-      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all active:scale-90"
       data-webview-maximize
       data-webview-ignore
     >
       <Square size={14} />
     </button>
     <button
-      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-colors"
+      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all active:scale-90"
       data-webview-close
       data-webview-ignore
     >
