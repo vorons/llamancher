@@ -114,16 +114,57 @@ int main(int argc, char* argv[]) {
     webview->expose("load_preset", [](const std::string& model_name) {
       auto p = Preset::load(model_name);
       return std::map<std::string, std::string>{
+        // Basic
         {"ctx_size",     std::to_string(p.ctx_size)},
         {"threads",      std::to_string(p.threads)},
+        // Model & Loading
         {"gpu_layers",   std::to_string(p.gpu_layers)},
         {"tensor_split", p.tensor_split},
-        {"temp",         std::to_string(p.temp)},
-        {"top_k",        std::to_string(p.top_k)},
-        {"top_p",        std::to_string(p.top_p)},
+        {"numa",         p.numa},
+        {"split_mode",   p.split_mode},
+        {"main_gpu",     std::to_string(p.main_gpu)},
+        {"device",       p.device},
         {"mlock",        p.mlock ? "true" : "false"},
         {"no_mmap",      p.no_mmap ? "true" : "false"},
+        // Context & Cache
+        {"batch_size",   std::to_string(p.batch_size)},
+        {"ubatch_size",  std::to_string(p.ubatch_size)},
+        {"cache_type_k", p.cache_type_k},
+        {"cache_type_v", p.cache_type_v},
         {"flash_attn",   p.flash_attn ? "true" : "false"},
+        {"defrag_thold", std::to_string(p.defrag_thold)},
+        // Sampling
+        {"samplers",          p.samplers},
+        {"seed",              std::to_string(p.seed)},
+        {"temp",              std::to_string(p.temp)},
+        {"top_k",             std::to_string(p.top_k)},
+        {"top_p",             std::to_string(p.top_p)},
+        {"min_p",             std::to_string(p.min_p)},
+        {"repeat_penalty",    std::to_string(p.repeat_penalty)},
+        {"presence_penalty",  std::to_string(p.presence_penalty)},
+        {"frequency_penalty", std::to_string(p.frequency_penalty)},
+        {"mirostat",          std::to_string(p.mirostat)},
+        // Server
+        {"parallel",   std::to_string(p.parallel)},
+        {"no_repack",  p.no_repack ? "true" : "false"},
+        // Logging
+        {"verbose",    p.verbose ? "true" : "false"},
+        {"verbosity",  std::to_string(p.verbosity)},
+        {"log_file",   p.log_file},
+        // Speculative decoding
+        {"spec_type",             p.spec_type},
+        {"spec_draft_n_max",      std::to_string(p.spec_draft_n_max)},
+        {"spec_draft_n_min",      std::to_string(p.spec_draft_n_min)},
+        {"spec_draft_p_split",    std::to_string(p.spec_draft_p_split)},
+        {"draft_model",           p.draft_model},
+        {"draft_gpu_layers",      std::to_string(p.draft_gpu_layers)},
+        {"threads_draft",         std::to_string(p.threads_draft)},
+        {"threads_batch_draft",   std::to_string(p.threads_batch_draft)},
+        {"spec_draft_poll",       p.spec_draft_poll ? "true" : "false"},
+        // Auto-fit
+        {"fit",            p.fit ? "true" : "false"},
+        {"fit_target_mib", p.fit_target_mib},
+        {"fit_ctx",        std::to_string(p.fit_ctx)},
       };
     });
 
@@ -143,16 +184,57 @@ int main(int argc, char* argv[]) {
         if (kv.contains(k)) v = (kv.at(k) == "true");
       };
 
+      // Basic
       gi("ctx_size",     p.ctx_size);
       gi("threads",      p.threads);
+      // Model & Loading
       gi("gpu_layers",   p.gpu_layers);
       gs("tensor_split", p.tensor_split);
-      gf("temp",         p.temp);
-      gi("top_k",        p.top_k);
-      gf("top_p",        p.top_p);
+      gs("numa",         p.numa);
+      gs("split_mode",   p.split_mode);
+      gi("main_gpu",     p.main_gpu);
+      gs("device",       p.device);
       gb("mlock",        p.mlock);
       gb("no_mmap",      p.no_mmap);
+      // Context & Cache
+      gi("batch_size",   p.batch_size);
+      gi("ubatch_size",  p.ubatch_size);
+      gs("cache_type_k", p.cache_type_k);
+      gs("cache_type_v", p.cache_type_v);
       gb("flash_attn",   p.flash_attn);
+      gi("defrag_thold", p.defrag_thold);
+      // Sampling
+      gs("samplers",          p.samplers);
+      gi("seed",              p.seed);
+      gf("temp",              p.temp);
+      gi("top_k",             p.top_k);
+      gf("top_p",             p.top_p);
+      gf("min_p",             p.min_p);
+      gf("repeat_penalty",    p.repeat_penalty);
+      gf("presence_penalty",  p.presence_penalty);
+      gf("frequency_penalty", p.frequency_penalty);
+      gi("mirostat",          p.mirostat);
+      // Server
+      gi("parallel",   p.parallel);
+      gb("no_repack",  p.no_repack);
+      // Logging
+      gb("verbose",    p.verbose);
+      gi("verbosity",  p.verbosity);
+      gs("log_file",   p.log_file);
+      // Speculative decoding
+      gs("spec_type",             p.spec_type);
+      gi("spec_draft_n_max",      p.spec_draft_n_max);
+      gi("spec_draft_n_min",      p.spec_draft_n_min);
+      gf("spec_draft_p_split",    p.spec_draft_p_split);
+      gs("draft_model",           p.draft_model);
+      gi("draft_gpu_layers",      p.draft_gpu_layers);
+      gi("threads_draft",         p.threads_draft);
+      gi("threads_batch_draft",   p.threads_batch_draft);
+      gb("spec_draft_poll",       p.spec_draft_poll);
+      // Auto-fit
+      gb("fit",            p.fit);
+      gs("fit_target_mib", p.fit_target_mib);
+      gi("fit_ctx",        p.fit_ctx);
 
       p.save(model_name);
     });
