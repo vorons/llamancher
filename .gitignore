@@ -18,4 +18,5 @@ Thumbs.db
 .codegraph/
 .saucer
 embedded/
+CMakeUserPresets.json
 .vscode/

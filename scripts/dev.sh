@@ -18,7 +18,7 @@ for i in $(seq 1 30); do
 done
 
 echo "==> Building and running backend in dev mode …"
-cmake -S "$ROOT" -B "$ROOT/build" -DCMAKE_BUILD_TYPE=Debug
+cmake -S "$ROOT" -B "$ROOT/build" --preset debug 2>/dev/null || cmake -S "$ROOT" -B "$ROOT/build" -DCMAKE_BUILD_TYPE=Debug
 cmake --build "$ROOT/build" --parallel
 "$ROOT/build/llamancher" --dev
 
