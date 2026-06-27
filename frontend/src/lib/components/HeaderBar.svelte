@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { view, selectedModel, serverStatus, serverModel, settingsOpen } from '$lib/stores.svelte';
+  import { view, selectedModel, serverStatus, serverModel, settingsOpen, scanning } from '$lib/stores.svelte';
   import { ArrowLeft, RefreshCw, Settings, Minus, Square, X } from '@lucide/svelte';
   import { cn } from '$lib/utils';
   import { Separator } from '$lib/ui/separator';
@@ -45,9 +45,10 @@
       <button
         class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
         onclick={handleRefresh}
+        disabled={$scanning}
         data-webview-ignore
       >
-        <RefreshCw size={16} />
+        <RefreshCw size={16} class={$scanning ? 'animate-spin' : ''} />
       </button>
     {/if}
 

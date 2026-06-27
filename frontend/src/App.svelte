@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Toaster, toast } from 'svelte-sonner';
-  import { models, serverStatus, serverModel, settings, view } from '$lib/stores.svelte';
+  import { models, serverStatus, serverModel, settings, view, scanning } from '$lib/stores.svelte';
   import { api, onServerStatus } from '$lib/saucer';
   import HeaderBar from '$lib/components/HeaderBar.svelte';
   import ModelList from '$lib/components/ModelList.svelte';
@@ -57,6 +57,7 @@
   });
 
   async function scanModels() {
+    scanning.set(true);
     try {
       const raw = await api.scanModels();
       models.set(raw as unknown as ModelInfo[]);
@@ -68,6 +69,8 @@
         { name: 'phi-3-mini-4k-instruct-q4_0', path: '', architecture: 'phi3', quantization: 'Q4_0', size: '2.23 GB', block_count: '32', context_length: '4096', file_type: '2' },
         { name: 'deepseek-coder-6.7b-instruct-q8_0', path: '', architecture: 'deepseek2', quantization: 'Q8_0', size: '6.85 GB', block_count: '30', context_length: '16384', file_type: '10' },
       ]);
+    } finally {
+      scanning.set(false);
     }
   }
 </script>

@@ -11,6 +11,11 @@ fs::path Preset::path(const std::string& model_name) const {
   return base / (model_name + ".preset.json");
 }
 
+bool Preset::exists(const std::string& model_name) {
+  Preset p;
+  return fs::exists(p.path(model_name));
+}
+
 Preset Preset::load(const std::string& model_name) {
   Preset p;
   auto fp = p.path(model_name);
@@ -35,6 +40,14 @@ Preset Preset::load(const std::string& model_name) {
     pos += k.size();
     auto end = buf.find_first_of(",\n}", pos);
     return std::stoi(buf.substr(pos, end - pos));
+  };
+  auto qu = [&](const char* key, uint32_t def) -> uint32_t {
+    auto k = std::string("\"") + key + "\":";
+    auto pos = buf.find(k);
+    if (pos == std::string::npos) return def;
+    pos += k.size();
+    auto end = buf.find_first_of(",\n}", pos);
+    return static_cast<uint32_t>(std::stoul(buf.substr(pos, end - pos)));
   };
   auto qf = [&](const char* key, float def) -> float {
     auto k = std::string("\"") + key + "\":";
@@ -62,6 +75,12 @@ Preset Preset::load(const std::string& model_name) {
   p.no_mmap = qb("no_mmap");
   p.flash_attn = qb("flash_attn");
 
+  // Metadata fields (optional, may not exist in older presets)
+  p.architecture = qs("architecture");
+  p.block_count = qu("block_count", 0);
+  p.context_length = qu("context_length", 0);
+  p.file_type = qi("file_type", -1);
+
   return p;
 }
 
@@ -80,13 +99,19 @@ void Preset::save(const std::string& model_name) const {
   "top_p": {},
   "mlock": {},
   "no_mmap": {},
-  "flash_attn": {}
+  "flash_attn": {},
+  "architecture": "{}",
+  "block_count": {},
+  "context_length": {},
+  "file_type": {}
 }})",
     ctx_size, threads, gpu_layers, tensor_split,
     temp, top_k, top_p,
     mlock ? "true" : "false",
     no_mmap ? "true" : "false",
-    flash_attn ? "true" : "false"
+    flash_attn ? "true" : "false",
+    architecture,
+    block_count, context_length, file_type
   );
 }
 
