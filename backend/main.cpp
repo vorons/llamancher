@@ -42,7 +42,6 @@ int main(int argc, char* argv[]) {
     // ── Shared state ───────────────────────────────────────────────
     auto settings   = std::make_shared<Settings>(Settings::load());
     auto model_mgr  = std::make_shared<ModelManager>(settings->models_dir);
-    auto server_mgr = std::make_shared<ServerManager>();
 
     // ── Create window ──────────────────────────────────────────────
     auto window  = saucer::window::create(app).value();
@@ -58,6 +57,9 @@ int main(int argc, char* argv[]) {
 
     // ── Status bridge (observer) ───────────────────────────────────
     auto bridge = std::make_unique<StatusBridge>(webview);
+
+    // server_mgr declared last so it is destroyed before bridge
+    auto server_mgr = std::make_shared<ServerManager>();
     server_mgr->set_observer(bridge.get());
 
     // ── Exposed API ────────────────────────────────────────────────
