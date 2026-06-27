@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
   import { Toaster, toast } from 'svelte-sonner';
   import { models, serverStatus, serverModel, settings, view, scanning } from '$lib/stores.svelte';
   import { api, onServerStatus } from '$lib/saucer';
@@ -78,9 +79,13 @@
 <div class="flex flex-col h-screen bg-background">
   <HeaderBar />
   {#if $view === 'detail'}
-    <ModelDetail />
+    <div in:fly={{ x: 300, duration: 200 }} out:fly={{ x: -300, duration: 200 }}>
+      <ModelDetail />
+    </div>
   {:else}
-    <ModelList />
+    <div in:fly={{ x: -300, duration: 200 }} out:fly={{ x: 300, duration: 200 }}>
+      <ModelList />
+    </div>
   {/if}
 </div>
 
