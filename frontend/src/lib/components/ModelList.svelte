@@ -40,12 +40,11 @@
         toast.info(`Stopped ${model.name}`);
       } else if (current === 'running') {
         // Another model is running — prompt stop+start
-        toast('Another model is running', {
+        toast.warning('Another model is running', {
           action: {
             label: 'Stop & Start',
             onClick: async () => {
               await api.stopServer();
-              // Tiny delay, then start
               setTimeout(async () => {
                 await api.startServer(model.name, model.path);
               }, 500);

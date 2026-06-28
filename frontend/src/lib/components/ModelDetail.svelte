@@ -265,7 +265,7 @@
       } else if (status.model === model.name) {
         await api.stopServer();
       } else {
-        toast('Another model is running', {
+        toast.warning('Another model is running', {
           action: {
             label: 'Stop & Start',
             onClick: async () => {

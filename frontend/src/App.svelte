@@ -123,5 +123,6 @@
       warning: 'bg-amber-950 border-amber-800 text-amber-300',
       success: 'bg-green-950 border-green-800 text-green-300',
     },
+    actionButtonStyle: 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-8 px-3 bg-accent text-accent-foreground hover:bg-accent/80 transition-colors',
   }}
 />
