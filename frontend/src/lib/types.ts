@@ -106,6 +106,9 @@ export interface Preset {
   spec_ngram_map_k4v_size_m: number;
   spec_ngram_map_k4v_min_hits: number;
 
+  // Chat template override
+  chat_template: string;
+
   // Auto-fit
   fit: boolean;
   fit_target_mib: string;        // comma-separated

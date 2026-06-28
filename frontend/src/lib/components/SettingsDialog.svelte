@@ -16,6 +16,8 @@
   let port = $state('8080');
   let apiKey = $state('');
 
+  let saveTimer: ReturnType<typeof setTimeout>;
+
   // Sync from store when dialog opens
   $effect(() => {
     if ($settingsOpen) {
@@ -29,7 +31,7 @@
   });
 
   function saveSetting(key: string, value: string) {
-    api.updateSetting(key, value).catch(() => {});
+    // Update local store immediately
     settings.update((s) => {
       if (key === 'llama_server_path') s.llama_server_path = value;
       else if (key === 'models_dir') s.models_dir = value;
@@ -39,6 +41,11 @@
       else if (key === 'api_key') s.api_key = value;
       return s;
     });
+    // Debounce IPC save to avoid flooding on keystroke
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      api.updateSetting(key, value).catch(() => {});
+    }, 300);
   }
 </script>
 

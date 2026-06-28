@@ -32,10 +32,10 @@ export const api = {
     return getApi<void>('update_setting');
   },
   get pickFile() {
-    return getApi<string>('pick_file');
+    return getApi<string | null>('pick_file');
   },
   get pickFolder() {
-    return getApi<string>('pick_folder');
+    return getApi<string | null>('pick_folder');
   },
   get scanModels() {
     return getApi<Array<Record<string, string>>>('scan_models');
@@ -62,7 +62,7 @@ export const api = {
     return getApi<string[]>('read_log');
   },
   get pickGrammarFile() {
-    return getApi<string>('pick_grammar_file');
+    return getApi<string | null>('pick_grammar_file');
   },
   get setWindowTitle() {
     return getApi<void>('set_window_title');
