@@ -9,6 +9,7 @@ export const settings = writable<Settings>({
   llama_server_path: 'llama-server',
   models_dir: '',
   auto_start_server: false,
+  theme: 'dark',
 });
 export const settingsOpen = writable(false);
 

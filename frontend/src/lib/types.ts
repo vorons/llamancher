@@ -92,6 +92,7 @@ export interface Settings {
   llama_server_path: string;
   models_dir: string;
   auto_start_server: boolean;
+  theme: 'dark' | 'light';
 }
 
 export type ServerStatus = 'stopped' | 'starting' | 'running' | 'error';

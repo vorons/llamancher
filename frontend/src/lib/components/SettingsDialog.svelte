@@ -12,6 +12,7 @@
   let llamaServerPath = $state('');
   let modelsDir = $state('');
   let autoStart = $state(false);
+  let isLight = $state(false);
 
   // Sync from store when dialog opens
   $effect(() => {
@@ -19,6 +20,7 @@
       llamaServerPath = $settings.llama_server_path;
       modelsDir = $settings.models_dir;
       autoStart = $settings.auto_start_server;
+      isLight = $settings.theme === 'light';
     }
   });
 
@@ -28,6 +30,7 @@
       if (key === 'llama_server_path') s.llama_server_path = value;
       else if (key === 'models_dir') s.models_dir = value;
       else if (key === 'auto_start_server') s.auto_start_server = value === 'true';
+      else if (key === 'theme') s.theme = value as 'dark' | 'light';
       return s;
     });
   }
@@ -117,6 +120,25 @@
           onCheckedChange={(c) => {
             autoStart = c;
             saveSetting('auto_start_server', String(c));
+          }}
+        />
+      </div>
+
+      <Separator />
+
+      <div class="flex items-center justify-between">
+        <div>
+          <Label for="theme">Light theme</Label>
+          <p class="text-xs text-muted-foreground">
+            Switch between dark and light appearance
+          </p>
+        </div>
+        <Switch
+          id="theme"
+          checked={isLight}
+          onCheckedChange={(c) => {
+            isLight = c;
+            saveSetting('theme', c ? 'light' : 'dark');
           }}
         />
       </div>

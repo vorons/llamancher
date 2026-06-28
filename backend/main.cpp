@@ -103,6 +103,7 @@ int main(int argc, char* argv[]) {
         {"llama_server_path", settings->llama_server_path},
         {"models_dir",        settings->models_dir},
         {"auto_start_server", settings->auto_start_server ? "true" : "false"},
+        {"theme",             settings->theme},
       };
     });
 
@@ -111,6 +112,7 @@ int main(int argc, char* argv[]) {
       if (key == "llama_server_path") settings->llama_server_path = value;
       else if (key == "models_dir")   settings->models_dir = value;
       else if (key == "auto_start_server") settings->auto_start_server = (value == "true");
+      else if (key == "theme")        settings->theme = value;
       settings->save();
     });
 
