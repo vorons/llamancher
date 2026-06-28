@@ -93,6 +93,12 @@
 <Toaster
   position="bottom-right"
   toastOptions={{
-    style: 'background: hsl(0 0% 7%); color: hsl(0 0% 98%); border: 1px solid hsl(0 0% 14.9%);',
+    class: 'border text-sm',
+    classes: {
+      error: 'bg-red-950 border-red-800 text-red-300',
+      info: 'bg-blue-950 border-blue-800 text-blue-300',
+      warning: 'bg-amber-950 border-amber-800 text-amber-300',
+      success: 'bg-green-950 border-green-800 text-green-300',
+    },
   }}
 />
