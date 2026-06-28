@@ -260,6 +260,7 @@
           toast.error('llama-server executable not found. Set the path in Settings.');
           return;
         }
+        serverModel.set(model.name);
       } else if (status.model === model.name) {
         await api.stopServer();
       } else {

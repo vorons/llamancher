@@ -30,6 +30,8 @@
           toast.error('Server is already running');
         } else if (result === 'server_not_found') {
           toast.error('llama-server executable not found at ' + s.llama_server_path);
+        } else {
+          serverModel.set(model.name);
         }
       } else if (current === 'running' && status.model === model.name) {
         // Stop running model
