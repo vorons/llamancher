@@ -430,8 +430,10 @@
 </script>
 
 {#if model}
-  <!-- ponytail: translateZ(0) forces GPU compositing layer to prevent font blur on scroll in WebKit -->
-  <div class="flex-1 overflow-y-auto p-4 space-y-5" style="transform: translateZ(0);">
+  <!-- ponytail: in WebKitGTK GPU compositing layers rasterise text at lower quality during scroll.
+       No transform/will-change — let the CPU rasterizer (Cairo/Pango) handle text at native resolution.
+       Antialiasing prevents sub-pixel re-rasterization, isolation creates a stacking context. -->
+  <div class="flex-1 overflow-y-auto p-4 space-y-5" style="-webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; isolation: isolate;">
     {#if loadingPreset}
       <div class="flex items-center justify-center h-32">
         <Loader2 size={24} class="animate-spin text-muted-foreground" />
@@ -493,7 +495,8 @@
       <!-- ============================================================ -->
       <!-- БЛОК 1: ОСНОВНЫЕ ПАРАМЕТРЫ (Main)                          -->
       <!-- ============================================================ -->
-      <div>
+      <!-- ponytail: contain:layout limits paint to each block — off-screen sections aren't re-rasterised -->
+      <div class="[contain:layout]">
         <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">Основные параметры</h3>
 
         <!-- Model & Performance -->
@@ -710,7 +713,7 @@
       <!-- ============================================================ -->
       <!-- БЛОК 2: ДОПОЛНИТЕЛЬНЫЕ ПАРАМЕТРЫ (Additional)               -->
       <!-- ============================================================ -->
-      <div>
+      <div class="[contain:layout]">
         <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">Дополнительные параметры</h3>
 
         <!-- min-p: slider 0.0-1.0 -->
@@ -1077,7 +1080,7 @@
       <!-- ============================================================ -->
       <!-- БЛОК 3: СПЕЦИАЛИЗИРОВАННЫЕ ПАРАМЕТРЫ (Specialized)          -->
       <!-- ============================================================ -->
-      <div>
+      <div class="[contain:layout]">
         <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">Специализированные параметры</h3>
 
         <!-- RoPE -->
