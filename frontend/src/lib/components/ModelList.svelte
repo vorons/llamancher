@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { models, view, selectedModel, serverStatus, serverModel } from '$lib/stores.svelte';
+  import { models, view, selectedModel, serverStatus, serverModel, settings } from '$lib/stores.svelte';
   import { Play, Square, Loader2 } from '@lucide/svelte';
   import { api } from '$lib/saucer';
+  import { get } from 'svelte/store';
   import { toast } from 'svelte-sonner';
   import { cn } from '$lib/utils';
   import type { ModelInfo } from '$lib/types';
@@ -17,10 +18,18 @@
       const current = status.status;
 
       if (current === 'stopped') {
+        const s = get(settings);
+        if (!s.llama_server_path) {
+          toast.error('llama-server executable path is not set. Configure it in Settings.');
+          loading = null;
+          return;
+        }
         // Start server with this model
         const result = await api.startServer(model.name, model.path);
         if (result === 'server_not_stopped') {
           toast.error('Server is already running');
+        } else if (result === 'server_not_found') {
+          toast.error('llama-server executable not found at ' + s.llama_server_path);
         }
       } else if (current === 'running' && status.model === model.name) {
         // Stop running model

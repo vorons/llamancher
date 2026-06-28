@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { selectedModel, serverStatus, serverModel } from '$lib/stores.svelte';
+  import { selectedModel, serverStatus, serverModel, settings } from '$lib/stores.svelte';
   import { Play, Square, Loader2 } from '@lucide/svelte';
   import { api } from '$lib/saucer';
   import { toast } from 'svelte-sonner';
+  import { get } from 'svelte/store';
   import { cn } from '$lib/utils';
   import { Separator } from '$lib/ui/separator';
   import { Label } from '$lib/ui/label';
@@ -247,8 +248,17 @@
     try {
       const status = await api.serverStatus();
       if (status.status === 'stopped') {
+        const s = get(settings);
+        if (!s.llama_server_path) {
+          toast.error('llama-server executable path is not set. Configure it in Settings.');
+          return;
+        }
         await api.savePreset(model.name, savePayload());
-        await api.startServer(model.name, model.path);
+        const result = await api.startServer(model.name, model.path);
+        if (result === 'server_not_found') {
+          toast.error('llama-server executable not found. Set the path in Settings.');
+          return;
+        }
       } else if (status.model === model.name) {
         await api.stopServer();
       } else {
@@ -306,7 +316,7 @@
           class={cn(
             'flex items-center justify-center h-8 w-8 rounded-md transition-all active:scale-95 shrink-0',
             isActive
-              ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+              ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
               : 'bg-secondary hover:bg-accent text-foreground',
           )}
           onclick={handlePlayStop}

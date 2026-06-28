@@ -31,6 +31,12 @@ export const api = {
   get updateSetting() {
     return getApi<void>('update_setting');
   },
+  get pickFile() {
+    return getApi<string>('pick_file');
+  },
+  get pickFolder() {
+    return getApi<string>('pick_folder');
+  },
   get scanModels() {
     return getApi<Array<Record<string, string>>>('scan_models');
   },
@@ -48,6 +54,9 @@ export const api = {
   },
   get stopServer() {
     return getApi<void>('stop_server');
+  },
+  get setWindowTitle() {
+    return getApi<void>('set_window_title');
   },
 };
 
