@@ -39,7 +39,6 @@ private:
   std::atomic<ServerStatus> status_{ServerStatus::Stopped};
   std::string current_model_;
   std::string server_path_;
-  std::vector<std::string> args_;
   int port_ = 8080;
   std::string log_path_;
   pid_t pid_ = 0;
