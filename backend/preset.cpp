@@ -1,7 +1,9 @@
 #include "preset.h"
-#include <fstream>
 #include <cstdlib>
-#include <format>
+#include <cstdio>
+#include <glaze/file/file_ops.hpp>
+#include <glaze/json/read.hpp>
+#include <glaze/json/write.hpp>
 
 namespace fs = std::filesystem;
 
@@ -21,247 +23,26 @@ Preset Preset::load(const std::string& model_name) {
   auto fp = p.path(model_name);
   if (!fs::exists(fp)) return p;
 
-  std::ifstream f(fp);
-  std::string buf((std::istreambuf_iterator<char>(f)), {});
-
-  // ponytail: naive parse. Same caveat as settings.cpp.
-  auto qs = [&](const char* key) -> std::string {
-    auto k = std::string("\"") + key + "\":\"";
-    auto pos = buf.find(k);
-    if (pos == std::string::npos) return {};
-    pos += k.size();
-    auto end = buf.find("\"", pos);
-    return buf.substr(pos, end - pos);
-  };
-  auto qi = [&](const char* key, int def) -> int {
-    auto k = std::string("\"") + key + "\":";
-    auto pos = buf.find(k);
-    if (pos == std::string::npos) return def;
-    pos += k.size();
-    auto end = buf.find_first_of(",\n}", pos);
-    return std::stoi(buf.substr(pos, end - pos));
-  };
-  auto qu = [&](const char* key, uint32_t def) -> uint32_t {
-    auto k = std::string("\"") + key + "\":";
-    auto pos = buf.find(k);
-    if (pos == std::string::npos) return def;
-    pos += k.size();
-    auto end = buf.find_first_of(",\n}", pos);
-    return static_cast<uint32_t>(std::stoul(buf.substr(pos, end - pos)));
-  };
-  auto qf = [&](const char* key, float def) -> float {
-    auto k = std::string("\"") + key + "\":";
-    auto pos = buf.find(k);
-    if (pos == std::string::npos) return def;
-    pos += k.size();
-    auto end = buf.find_first_of(",\n}", pos);
-    return std::stof(buf.substr(pos, end - pos));
-  };
-  auto qb = [&](const char* key) -> bool {
-    auto k = std::string("\"") + key + "\":";
-    auto pos = buf.find(k);
-    if (pos == std::string::npos) return false;
-    return buf.substr(pos + k.size(), 4) == "true";
-  };
-
-  p.ctx_size = qi("ctx_size", 2048);
-  p.threads = qi("threads", 4);
-
-  // Model & Loading
-  p.gpu_layers = qi("gpu_layers", 0);
-  p.tensor_split = qs("tensor_split");
-  p.numa = qs("numa");
-  p.split_mode = qs("split_mode");
-  p.main_gpu = qi("main_gpu", 0);
-  p.device = qs("device");
-  p.mlock = qb("mlock");
-  p.no_mmap = qb("no_mmap");
-  p.jinja = qb("jinja");
-  p.grammar = qs("grammar");
-  p.grammar_file = qs("grammar_file");
-  p.json_schema = qs("json_schema");
-
-  // Context & Cache
-  p.batch_size = qi("batch_size", 2048);
-  p.ubatch_size = qi("ubatch_size", 512);
-  p.cache_type_k = qs("cache_type_k");
-  p.cache_type_v = qs("cache_type_v");
-  p.flash_attn = qb("flash_attn");
-  p.defrag_thold = qi("defrag_thold", -1);
-
-  // Sampling
-  p.samplers = qs("samplers");
-  p.seed = qi("seed", -1);
-  p.temp = qf("temp", 0.80f);
-  p.top_k = qi("top_k", 40);
-  p.top_p = qf("top_p", 0.95f);
-  p.min_p = qf("min_p", 0.05f);
-  p.repeat_penalty = qf("repeat_penalty", 1.00f);
-  p.presence_penalty = qf("presence_penalty", 0.00f);
-  p.frequency_penalty = qf("frequency_penalty", 0.00f);
-  p.mirostat = qi("mirostat", 0);
-
-  // Server
-  p.parallel = qi("parallel", 1);
-  p.no_repack = qb("no_repack");
-
-  // Logging
-  p.verbose = qb("verbose");
-  p.verbosity = qi("verbosity", 0);
-  p.log_file = qs("log_file");
-
-  // Speculative decoding
-  p.spec_type = qs("spec_type");
-  p.spec_draft_n_max = qi("spec_draft_n_max", 16);
-  p.spec_draft_n_min = qi("spec_draft_n_min", 0);
-  p.spec_draft_p_split = qf("spec_draft_p_split", 0.50f);
-  p.draft_model = qs("draft_model");
-  p.draft_gpu_layers = qi("draft_gpu_layers", 0);
-  p.threads_draft = qi("threads_draft", 0);
-  p.threads_batch_draft = qi("threads_batch_draft", 0);
-  p.spec_draft_poll = qb("spec_draft_poll");
-  p.spec_ngram_mod_n_min = qi("spec_ngram_mod_n_min", 48);
-  p.spec_ngram_mod_n_max = qi("spec_ngram_mod_n_max", 64);
-  p.spec_ngram_mod_n_match = qi("spec_ngram_mod_n_match", 24);
-  p.spec_ngram_simple_size_n = qi("spec_ngram_simple_size_n", 12);
-  p.spec_ngram_simple_size_m = qi("spec_ngram_simple_size_m", 48);
-  p.spec_ngram_simple_min_hits = qi("spec_ngram_simple_min_hits", 1);
-  p.spec_ngram_map_k_size_n = qi("spec_ngram_map_k_size_n", 12);
-  p.spec_ngram_map_k_size_m = qi("spec_ngram_map_k_size_m", 48);
-  p.spec_ngram_map_k_min_hits = qi("spec_ngram_map_k_min_hits", 1);
-  p.spec_ngram_map_k4v_size_n = qi("spec_ngram_map_k4v_size_n", 12);
-  p.spec_ngram_map_k4v_size_m = qi("spec_ngram_map_k4v_size_m", 48);
-  p.spec_ngram_map_k4v_min_hits = qi("spec_ngram_map_k4v_min_hits", 1);
-
-  // Auto-fit
-  p.fit = true; // default
-  {
-    auto k = std::string("\"fit\":");
-    auto pos = buf.find(k);
-    if (pos != std::string::npos)
-      p.fit = (buf.substr(pos + k.size(), 4) == "true");
+  // ponytail: if the file is corrupt we silently return defaults. Upgrade to
+  // user-visible error when the UI has toast infrastructure.
+  auto ec = glz::read_file_json(p, fp.string(), std::string{});
+  if (ec) {
+    std::fprintf(stderr, "llamancher: corrupt preset %s — %s\n",
+                 model_name.c_str(), glz::format_error(ec).c_str());
+    return Preset{};
   }
-  p.fit_target_mib = qs("fit_target_mib");
-  p.fit_ctx = qi("fit_ctx", 4096);
-
-  // Metadata fields (optional, may not exist in older presets)
-  p.architecture = qs("architecture");
-  p.block_count = qu("block_count", 0);
-  p.context_length = qu("context_length", 0);
-  p.file_type = qi("file_type", -1);
-
   return p;
 }
 
 void Preset::save(const std::string& model_name) const {
   auto fp = path(model_name);
   fs::create_directories(fp.parent_path());
-  std::ofstream f(fp);
-  f << std::format(
-    R"({{
-  "ctx_size": {},
-  "threads": {},
-  "gpu_layers": {},
-  "tensor_split": "{}",
-  "numa": "{}",
-  "split_mode": "{}",
-  "main_gpu": {},
-  "device": "{}",
-  "mlock": {},
-  "no_mmap": {},
-  "jinja": {},
-  "grammar": "{}",
-  "grammar_file": "{}",
-  "json_schema": "{}",
-  "batch_size": {},
-  "ubatch_size": {},
-  "cache_type_k": "{}",
-  "cache_type_v": "{}",
-  "flash_attn": {},
-  "defrag_thold": {},
-  "samplers": "{}",
-  "seed": {},
-  "temp": {},
-  "top_k": {},
-  "top_p": {},
-  "min_p": {},
-  "repeat_penalty": {},
-  "presence_penalty": {},
-  "frequency_penalty": {},
-  "mirostat": {},
-  "parallel": {},
-  "no_repack": {},
-  "verbose": {},
-  "verbosity": {},
-  "log_file": "{}",
-  "spec_type": "{}",
-  "spec_draft_n_max": {},
-  "spec_draft_n_min": {},
-  "spec_draft_p_split": {},
-  "draft_model": "{}",
-  "draft_gpu_layers": {},
-  "threads_draft": {},
-  "threads_batch_draft": {},
-  "spec_draft_poll": {},
-  "spec_ngram_mod_n_min": {},
-  "spec_ngram_mod_n_max": {},
-  "spec_ngram_mod_n_match": {},
-  "spec_ngram_simple_size_n": {},
-  "spec_ngram_simple_size_m": {},
-  "spec_ngram_simple_min_hits": {},
-  "spec_ngram_map_k_size_n": {},
-  "spec_ngram_map_k_size_m": {},
-  "spec_ngram_map_k_min_hits": {},
-  "spec_ngram_map_k4v_size_n": {},
-  "spec_ngram_map_k4v_size_m": {},
-  "spec_ngram_map_k4v_min_hits": {},
-  "fit": {},
-  "fit_target_mib": "{}",
-  "fit_ctx": {},
-  "architecture": "{}",
-  "block_count": {},
-  "context_length": {},
-  "file_type": {}
-}})",
-    ctx_size, threads,
-    gpu_layers, tensor_split,
-    numa, split_mode, main_gpu, device,
-    mlock ? "true" : "false",
-    no_mmap ? "true" : "false",
-    jinja ? "true" : "false",
-    grammar, grammar_file, json_schema,
-    batch_size, ubatch_size,
-    cache_type_k, cache_type_v,
-    flash_attn ? "true" : "false",
-    defrag_thold,
-    samplers, seed,
-    temp, top_k, top_p,
-    min_p, repeat_penalty, presence_penalty, frequency_penalty,
-    mirostat,
-    parallel,
-    no_repack ? "true" : "false",
-    verbose ? "true" : "false",
-    verbosity, log_file,
-    spec_type, spec_draft_n_max, spec_draft_n_min, spec_draft_p_split,
-    draft_model, draft_gpu_layers, threads_draft, threads_batch_draft,
-    spec_draft_poll ? "true" : "false",
-    spec_ngram_mod_n_min,
-    spec_ngram_mod_n_max,
-    spec_ngram_mod_n_match,
-    spec_ngram_simple_size_n,
-    spec_ngram_simple_size_m,
-    spec_ngram_simple_min_hits,
-    spec_ngram_map_k_size_n,
-    spec_ngram_map_k_size_m,
-    spec_ngram_map_k_min_hits,
-    spec_ngram_map_k4v_size_n,
-    spec_ngram_map_k4v_size_m,
-    spec_ngram_map_k4v_min_hits,
-    fit ? "true" : "false",
-    fit_target_mib, fit_ctx,
-    architecture,
-    block_count, context_length, file_type
-  );
+
+  auto ec = glz::write_file_json(*this, fp.string(), std::string{});
+  if (ec) {
+    std::fprintf(stderr, "llamancher: failed to save preset %s — %s\n",
+                 model_name.c_str(), glz::format_error(ec).c_str());
+  }
 }
 
 std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
