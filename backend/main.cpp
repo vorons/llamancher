@@ -438,6 +438,10 @@ int main(int argc, char* argv[]) {
       auto args = preset.cli_args(model_path);
       args.insert(args.end(), {"--host", "127.0.0.1", "--port", "8080"});
       server_mgr->start(settings->llama_server_path, args);
+      // Use display_name from preset for the title, fallback to filename stem
+      if (!preset.display_name.empty()) {
+        server_mgr->set_current_model(preset.display_name);
+      }
       return std::string("ok");
     });
 
