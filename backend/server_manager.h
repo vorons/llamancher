@@ -26,6 +26,7 @@ public:
 
   ServerStatus status() const;
   std::string   current_model() const;
+  void          set_current_model(const std::string& name) { current_model_ = name; }
   int           port() const;
 
   void set_observer(ServerObserver* obs) { observer_ = obs; }
