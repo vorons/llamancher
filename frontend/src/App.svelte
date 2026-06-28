@@ -123,6 +123,6 @@
       warning: 'bg-amber-950 border-amber-800 text-amber-300',
       success: 'bg-green-950 border-green-800 text-green-300',
     },
-    actionButtonStyle: 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-8 px-3 bg-accent text-accent-foreground hover:bg-accent/80 transition-colors',
+    actionButtonStyle: 'display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;height:32px;padding:0 12px;border-radius:6px;font-size:13px;font-weight:500;background:hsl(0 0% 25%);color:hsl(0 0% 93%);border:none;cursor:pointer;transition:background 0.15s',
   }}
 />
