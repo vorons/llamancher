@@ -320,7 +320,7 @@
               : 'bg-secondary hover:bg-accent text-foreground',
           )}
           onclick={handlePlayStop}
-          disabled={serverLoading}
+          disabled={serverLoading || isStarting}
           aria-label={isActive ? 'Stop server' : 'Start server'}
         >
           {#if serverLoading || isStarting}
