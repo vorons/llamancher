@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { Toaster, toast } from 'svelte-sonner';
+  import { CircleAlert, Info, TriangleAlert, Check } from '@lucide/svelte';
   import { models, serverStatus, serverModel, settings, view, scanning } from '$lib/stores.svelte';
   import { api, onServerStatus } from '$lib/saucer';
   import HeaderBar from '$lib/components/HeaderBar.svelte';
@@ -90,10 +91,31 @@
 </div>
 
 <SettingsDialog />
+
+{#snippet errorIcon()}
+  <CircleAlert size={16} class="text-red-400 shrink-0" />
+{/snippet}
+
+{#snippet infoIcon()}
+  <Info size={16} class="text-blue-400 shrink-0" />
+{/snippet}
+
+{#snippet warningIcon()}
+  <TriangleAlert size={16} class="text-amber-400 shrink-0" />
+{/snippet}
+
+{#snippet successIcon()}
+  <Check size={16} class="text-green-400 shrink-0" />
+{/snippet}
+
 <Toaster
   position="bottom-right"
+  {errorIcon}
+  {infoIcon}
+  {warningIcon}
+  {successIcon}
   toastOptions={{
-    class: 'border text-sm',
+    class: 'text-sm [&>div]:gap-2',
     classes: {
       error: 'bg-red-950 border-red-800 text-red-300',
       info: 'bg-blue-950 border-blue-800 text-blue-300',
