@@ -113,6 +113,36 @@ export interface Preset {
   fit: boolean;
   fit_target_mib: string;        // comma-separated
   fit_ctx: number;
+
+  // --- Fields from the comprehensive launch-params spec ---
+
+  // Основные (Main)
+  predict: number;               // -n, --predict (default -1 = unlimited)
+
+  // Дополнительные (Additional)
+  json_schema_file: string;      // -jf
+  cache_type_k_draft: string;    // -ctkd, draft-model KV cache type
+  mmproj: string;                // -mm, --mmproj, multimodal projector
+
+  // Специализированные (Specialized)
+  rope_scaling: string;          // 'none' | 'linear' | 'yarn'
+  rope_scale: number;            // --rope-scale
+  yarn_attn_factor: number;      // --yarn-attn-factor (alpha)
+  yarn_beta_fast: number;        // --yarn-beta-fast
+  yarn_beta_slow: number;        // --yarn-beta-slow
+  yarn_orig_ctx: number;         // --yarn-orig-ctx
+  lora: string;                  // --lora path
+  lora_scaled: string;           // --lora-scaled path,scale
+  control_vector: string;        // --control-vector path
+  metrics: boolean;              // --metrics endpoint
+  offline: boolean;              // --offline (cache only)
+  slot_save_path: string;        // --slot-save-path
+  sleep_idle_seconds: number;    // --sleep-idle-seconds
+  webui: boolean;                // --webui
+
+  // Server-mode flags (used for dependency logic)
+  embedding: boolean;            // --embedding (hides sampling params)
+  rerank: boolean;               // --rerank (hides sampling params)
 }
 
 export interface Settings {
