@@ -23,10 +23,13 @@
   });
 
   const headerTitle = $derived(
-    $view === 'detail' && $selectedModel
-      ? $selectedModel.name
-      : 'llamancher'
+    $serverStatus === 'running' && $serverModel
+      ? `${$serverModel} — llamancher`
+      : $view === 'detail' && $selectedModel
+        ? $selectedModel.name
+        : 'llamancher'
   );
+
 </script>
 
 <header

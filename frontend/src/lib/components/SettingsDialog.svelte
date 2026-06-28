@@ -6,6 +6,7 @@
   import { Input } from '$lib/ui/input';
   import { Switch } from '$lib/ui/switch';
   import { Separator } from '$lib/ui/separator';
+  import { Button } from '$lib/ui/button';
 
   // Local copies for editing
   let llamaServerPath = $state('');
@@ -41,15 +42,30 @@
     <div class="space-y-4">
       <div class="space-y-1">
         <Label for="llama_server_path">llama-server path</Label>
-        <Input
-          id="llama_server_path"
-          placeholder="/usr/local/bin/llama-server"
-          value={llamaServerPath}
-          oninput={(e) => {
-            llamaServerPath = e.currentTarget.value;
-            saveSetting('llama_server_path', e.currentTarget.value);
-          }}
-        />
+        <div class="flex gap-2">
+          <Input
+            id="llama_server_path"
+            placeholder="/usr/local/bin/llama-server"
+            value={llamaServerPath}
+            oninput={(e) => {
+              llamaServerPath = e.currentTarget.value;
+              saveSetting('llama_server_path', e.currentTarget.value);
+            }}
+            class="flex-1"
+          />
+          <Button
+            variant="outline"
+            onclick={async () => {
+              const path = await api.pickFile();
+              if (path) {
+                llamaServerPath = path;
+                saveSetting('llama_server_path', path);
+              }
+            }}
+          >
+            Browse
+          </Button>
+        </div>
         <p class="text-xs text-muted-foreground mt-1">
           Path to the llama-server executable
         </p>
@@ -57,15 +73,30 @@
 
       <div class="space-y-1">
         <Label for="models_dir">Models directory</Label>
-        <Input
-          id="models_dir"
-          placeholder="~/.llamancher/models"
-          value={modelsDir}
-          oninput={(e) => {
-            modelsDir = e.currentTarget.value;
-            saveSetting('models_dir', e.currentTarget.value);
-          }}
-        />
+        <div class="flex gap-2">
+          <Input
+            id="models_dir"
+            placeholder="~/.llamancher/models"
+            value={modelsDir}
+            oninput={(e) => {
+              modelsDir = e.currentTarget.value;
+              saveSetting('models_dir', e.currentTarget.value);
+            }}
+            class="flex-1"
+          />
+          <Button
+            variant="outline"
+            onclick={async () => {
+              const path = await api.pickFolder();
+              if (path) {
+                modelsDir = path;
+                saveSetting('models_dir', path);
+              }
+            }}
+          >
+            Browse
+          </Button>
+        </div>
         <p class="text-xs text-muted-foreground mt-1">
           Directory containing GGUF model files
         </p>

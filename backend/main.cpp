@@ -12,6 +12,8 @@
 #include <vector>
 #include <string>
 #include <format>
+#include <array>
+#include <cstdio>
 
 // Observer that bridges server status → JS via saucer execute
 class StatusBridge : public ServerObserver {
@@ -63,6 +65,38 @@ int main(int argc, char* argv[]) {
     server_mgr->set_observer(bridge.get());
 
     // ── Exposed API ────────────────────────────────────────────────
+
+    // ── File pickers (native dialogs) ────────────────────────────────
+
+    // ponytail: popen+zenity blocks the webview event loop during the dialog.
+    // Upgrade to gtk_file_chooser_native_new for non-blocking UX
+    // when GTK headers are accessible from this target.
+    auto exec_cmd = [](const std::string& cmd) -> std::string {
+      std::array<char, 4096> buf{};
+      std::string result;
+      auto* pipe = popen(cmd.c_str(), "r");
+      if (!pipe) return {};
+      while (fgets(buf.data(), static_cast<int>(buf.size()), pipe))
+        result += buf.data();
+      auto rc = pclose(pipe);
+      if (rc != 0) return {};
+      if (!result.empty() && result.back() == '\n') result.pop_back();
+      return result;
+    };
+
+    webview->expose("pick_file", [exec_cmd]() {
+      return exec_cmd("zenity --file-selection --title='Select llama-server executable' 2>/dev/null");
+    });
+
+    webview->expose("pick_folder", [exec_cmd]() {
+      return exec_cmd("zenity --file-selection --directory --title='Select models directory' 2>/dev/null");
+    });
+
+    webview->expose("set_window_title", [window](const std::string& title) {
+      window->set_title(title);
+    });
+
+    // ── Settings ──────────────────────────────────────────────────────
 
     webview->expose("get_settings", [settings]() {
       return std::map<std::string, std::string>{
@@ -292,6 +326,9 @@ int main(int argc, char* argv[]) {
                                      const std::string& model_path) {
       if (server_mgr->status() != ServerStatus::Stopped) {
         return std::string("server_not_stopped");
+      }
+      if (settings->llama_server_path.empty()) {
+        return std::string("server_not_found");
       }
       auto preset = Preset::load(model_name);
       auto args = preset.cli_args(model_path);
