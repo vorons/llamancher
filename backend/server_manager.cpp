@@ -17,18 +17,10 @@ namespace fs = std::filesystem;
 
 ServerManager::ServerManager() = default;
 ServerManager::~ServerManager() {
-  // Prevent the health thread from calling into the observer while we tear down
+  // stop() sends SIGTERM, waits up to 5s, then SIGKILL — then joins the health thread.
+  // observer_ is nulled after so the health thread (already joined) can't call into it.
+  stop();
   observer_ = nullptr;
-  running_.store(false);
-
-  if (health_thread_ && health_thread_->joinable()) health_thread_->join();
-  health_thread_.reset();
-
-  if (pid_ > 0) {
-    kill(pid_, SIGKILL);
-    waitpid(pid_, nullptr, 0);
-    pid_ = 0;
-  }
 }
 
 ServerStatus ServerManager::status() const { return status_.load(); }
