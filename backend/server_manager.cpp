@@ -4,7 +4,7 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h>
+#include <arpa/inet.h>
 #include <fcntl.h>
 #include <cstring>
 #include <chrono>
@@ -132,13 +132,10 @@ void ServerManager::health_check() {
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock < 0) return;
 
-  struct hostent* server = gethostbyname("127.0.0.1");
-  if (!server) { close(sock); return; }
-
   struct sockaddr_in addr{};
   addr.sin_family = AF_INET;
-  std::memcpy(&addr.sin_addr.s_addr, server->h_addr, server->h_length);
   addr.sin_port = htons(port_);
+  if (inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr) != 1) { close(sock); return; }
 
   struct timeval tv{};
   tv.tv_sec = 1;
