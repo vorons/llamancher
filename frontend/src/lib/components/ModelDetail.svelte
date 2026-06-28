@@ -261,6 +261,7 @@
           return;
         }
         serverModel.set(model.name);
+        serverStatus.set('starting');
       } else if (status.model === model.name) {
         await api.stopServer();
       } else {
