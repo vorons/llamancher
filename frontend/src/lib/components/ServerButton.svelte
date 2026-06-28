@@ -42,8 +42,8 @@
   {#if loading || isStarting}
     <Loader2 size={16} class="animate-spin" />
   {:else if isActive}
-    <Square size={14} />
+    <Square size={14} fill="currentColor" />
   {:else}
-    <Play size={14} />
+    <Play size={14} fill="currentColor" />
   {/if}
 </button>
