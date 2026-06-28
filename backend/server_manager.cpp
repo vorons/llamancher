@@ -37,7 +37,6 @@ void ServerManager::start(const std::string& server_path,
 
   status_.store(ServerStatus::Starting);
   server_path_ = server_path;
-  args_ = args;
   current_model_ = "unknown";
 
   for (size_t i = 0; i + 1 < args.size(); ++i) {
