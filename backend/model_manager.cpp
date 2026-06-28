@@ -135,10 +135,31 @@ void ModelManager::read_gguf_metadata(const fs::path& path, ModelInfo& info) con
   uint64_t bytes_read = f.gcount();
   if (bytes_read == 0) return;
 
-  const char* p   = buf.data();
-  const char* end = p + bytes_read;
+  const char* const buf_end = buf.data() + bytes_read;
 
+  // ── First pass: find general.architecture (ordering not guaranteed) ──
   std::string arch;
+  {
+    const char* cur = buf.data();
+    for (uint64_t i = 0; i < metadata_kv_count; ++i) {
+      if (cur + 8 > buf_end) break;
+      uint64_t key_len = read_u64(cur); cur += 8;
+      if (cur + key_len > buf_end) break;
+      std::string key(cur, key_len); cur += key_len;
+      if (cur + 4 > buf_end) break;
+      uint32_t val_type = read_u32(cur); cur += 4;
+      if (key == "general.architecture" && val_type == 8) {
+        arch = read_string_val(cur, buf_end);
+        info.architecture = arch;
+        break;
+      }
+      if (!skip_value(cur, buf_end, val_type)) break;
+    }
+  }
+
+  // ── Second pass: extract all metadata with arch known ──
+  const char* p   = buf.data();
+  const char* end = buf_end;
 
   for (uint64_t i = 0; i < metadata_kv_count; ++i) {
     if (p + 8 > end) break;
@@ -180,8 +201,8 @@ void ModelManager::read_gguf_metadata(const fs::path& path, ModelInfo& info) con
 
     // General metadata
     if (key == "general.architecture" && val_type == 8) {
-      info.architecture = read_string_val(p, end);
-      arch = info.architecture;
+      // already captured in first pass; skip value
+      read_string_val(p, end);
     }
     else if (key == "general.name")                               try_string(info.display_name);
     else if (key == "general.size_label")                         try_string(info.size_label);
@@ -198,16 +219,16 @@ void ModelManager::read_gguf_metadata(const fs::path& path, ModelInfo& info) con
     else if (key == "general.sampling.top_p")                     try_f32(info.sample_top_p);
     else if (key == "general.sampling.min_p")                     try_f32(info.sample_min_p);
     else if (key == "general.sampling.mirostat")                 { float v; try_f32(v); info.sample_mirostat = v; }
-    // Architecture-prefixed
-    else if (!arch.empty() && key == arch + ".block_count")       try_u32(info.block_count);
-    else if (!arch.empty() && key == arch + ".context_length")    try_u32(info.context_length);
-    else if (!arch.empty() && key == arch + ".vocab_size")        try_u32(info.vocab_size);
-    else if (!arch.empty() && key == arch + ".embedding_length")  try_u32(info.embedding_length);
-    else if (!arch.empty() && key == arch + ".feed_forward_length") try_u32(info.feed_forward_length);
-    else if (!arch.empty() && key == arch + ".attention.head_count")     try_u32(info.head_count);
-    else if (!arch.empty() && key == arch + ".attention.head_count_kv")  try_u32(info.head_count_kv);
-    else if (!arch.empty() && key == arch + ".expert_count")              try_u32(info.expert_count);
-    else if (!arch.empty() && key == arch + ".expert_used_count")         try_u32(info.expert_used_count);
+    // Architecture-prefixed  (arch is always set now, no empty check needed)
+    else if (key == arch + ".block_count")                        try_u32(info.block_count);
+    else if (key == arch + ".context_length")                     try_u32(info.context_length);
+    else if (key == arch + ".vocab_size")                         try_u32(info.vocab_size);
+    else if (key == arch + ".embedding_length")                   try_u32(info.embedding_length);
+    else if (key == arch + ".feed_forward_length")                try_u32(info.feed_forward_length);
+    else if (key == arch + ".attention.head_count")              try_u32(info.head_count);
+    else if (key == arch + ".attention.head_count_kv")           try_u32(info.head_count_kv);
+    else if (key == arch + ".expert_count")                      try_u32(info.expert_count);
+    else if (key == arch + ".expert_used_count")                 try_u32(info.expert_used_count);
     // Tokenizer
     else if (key == "tokenizer.ggml.model")                      try_string(info.tokenizer_model);
     else if (key == "tokenizer.ggml.bos_token_id")                try_i32(info.bos_token_id);

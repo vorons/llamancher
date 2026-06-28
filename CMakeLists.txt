@@ -28,6 +28,10 @@ FetchContent_Declare(
 set(FETCHCONTENT_QUIET OFF)
 FetchContent_MakeAvailable(saucer)
 
+# ── GTK4 (native file dialogs) ─────────────────────────────────────────────
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK4 REQUIRED gtk4>=4.12 IMPORTED_TARGET)
+
 # ── Backend executable ──────────────────────────────────────────────────────
 add_executable(llamancher
   backend/main.cpp
@@ -52,8 +56,8 @@ if(PNPM)
 
   # Embed the built frontend into the binary
   saucer_embed("${CMAKE_SOURCE_DIR}/frontend/dist" TARGET llamancher)
-  target_link_libraries(llamancher PRIVATE saucer saucer::embedded)
+  target_link_libraries(llamancher PRIVATE saucer saucer::embedded PkgConfig::GTK4)
 else()
   message(WARNING "pnpm not found — frontend will not be built automatically")
-  target_link_libraries(llamancher PRIVATE saucer)
+  target_link_libraries(llamancher PRIVATE saucer PkgConfig::GTK4)
 endif()
