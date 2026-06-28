@@ -12,7 +12,7 @@
   import { Switch } from '$lib/ui/switch';
   import { Slider } from '$lib/ui/slider';
   import { NativeSelect, NativeSelectOption } from '$lib/ui/native-select';
-  import type { Preset } from '$lib/types';
+  import type { ModelInfo, Preset } from '$lib/types';
 
   let preset = $state<Preset>({
     ctx_size: 2048,
@@ -235,7 +235,7 @@
     saveTimer = setTimeout(() => {
       if (model) {
         api.savePreset(model.name, savePayload());
-        if ($serverStatus === 'running' && $serverModel === model?.name) {
+        if ($serverStatus === 'running' && modelDisplayName(model) && $serverModel === modelDisplayName(model)) {
           toast.info('Changes will apply after restart');
         }
       }
@@ -249,6 +249,10 @@
       if (st.status === target) return;
       await new Promise(r => setTimeout(r, 200));
     }
+  }
+
+  function modelDisplayName(m: ModelInfo | null): string {
+    return m?.display_name && m.display_name.trim() !== '' ? m.display_name : m?.name ?? '';
   }
 
   async function handlePlayStop() {
@@ -269,9 +273,9 @@
           toast.error('llama-server executable not found. Set the path in Settings.');
           return;
         }
-        serverModel.set(model.display_name && model.display_name.trim() !== '' ? model.display_name : model.name);
+        serverModel.set(modelDisplayName(model));
         serverStatus.set('starting');
-      } else if (status.model === model.name) {
+      } else if (modelDisplayName(model) && status.model === modelDisplayName(model)) {
         await api.stopServer();
         await waitForStatus('stopped');
         serverModel.set('');
@@ -323,7 +327,7 @@
           </div>
         </div>
         <ServerButton
-          modelName={model!.name}
+          modelName={modelDisplayName(model)}
           serverModelName={$serverModel}
           serverStatus={$serverStatus}
           loading={serverLoading}
