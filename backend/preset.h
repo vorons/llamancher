@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <glaze/glaze.hpp>
 
 struct Preset {
   // Basic
@@ -95,4 +96,84 @@ struct Preset {
 
   // Build CLI args vector for llama-server
   std::vector<std::string> cli_args(const std::string& model_path) const;
+};
+
+template<>
+struct glz::meta<Preset> {
+  using T = Preset;
+  static constexpr auto value = object(
+    // Basic
+    "ctx_size",              &T::ctx_size,
+    "threads",               &T::threads,
+    // Model & Loading
+    "gpu_layers",            &T::gpu_layers,
+    "tensor_split",          &T::tensor_split,
+    "numa",                  &T::numa,
+    "split_mode",            &T::split_mode,
+    "main_gpu",              &T::main_gpu,
+    "device",                &T::device,
+    "mlock",                 &T::mlock,
+    "no_mmap",               &T::no_mmap,
+    "jinja",                 &T::jinja,
+    "grammar",               &T::grammar,
+    "grammar_file",          &T::grammar_file,
+    "json_schema",           &T::json_schema,
+    // Context & Cache
+    "batch_size",            &T::batch_size,
+    "ubatch_size",           &T::ubatch_size,
+    "cache_type_k",          &T::cache_type_k,
+    "cache_type_v",          &T::cache_type_v,
+    "flash_attn",            &T::flash_attn,
+    "defrag_thold",          &T::defrag_thold,
+    // Sampling
+    "samplers",              &T::samplers,
+    "seed",                  &T::seed,
+    "temp",                  &T::temp,
+    "top_k",                 &T::top_k,
+    "top_p",                 &T::top_p,
+    "min_p",                 &T::min_p,
+    "repeat_penalty",        &T::repeat_penalty,
+    "presence_penalty",      &T::presence_penalty,
+    "frequency_penalty",     &T::frequency_penalty,
+    "mirostat",              &T::mirostat,
+    // Server
+    "parallel",              &T::parallel,
+    "no_repack",             &T::no_repack,
+    // Logging
+    "verbose",               &T::verbose,
+    "verbosity",             &T::verbosity,
+    "log_file",              &T::log_file,
+    // Speculative decoding
+    "spec_type",             &T::spec_type,
+    "spec_draft_n_max",      &T::spec_draft_n_max,
+    "spec_draft_n_min",      &T::spec_draft_n_min,
+    "spec_draft_p_split",    &T::spec_draft_p_split,
+    "draft_model",           &T::draft_model,
+    "draft_gpu_layers",      &T::draft_gpu_layers,
+    "threads_draft",         &T::threads_draft,
+    "threads_batch_draft",   &T::threads_batch_draft,
+    "spec_draft_poll",       &T::spec_draft_poll,
+    // N-gram
+    "spec_ngram_mod_n_min",       &T::spec_ngram_mod_n_min,
+    "spec_ngram_mod_n_max",       &T::spec_ngram_mod_n_max,
+    "spec_ngram_mod_n_match",     &T::spec_ngram_mod_n_match,
+    "spec_ngram_simple_size_n",   &T::spec_ngram_simple_size_n,
+    "spec_ngram_simple_size_m",   &T::spec_ngram_simple_size_m,
+    "spec_ngram_simple_min_hits", &T::spec_ngram_simple_min_hits,
+    "spec_ngram_map_k_size_n",    &T::spec_ngram_map_k_size_n,
+    "spec_ngram_map_k_size_m",    &T::spec_ngram_map_k_size_m,
+    "spec_ngram_map_k_min_hits",  &T::spec_ngram_map_k_min_hits,
+    "spec_ngram_map_k4v_size_n",  &T::spec_ngram_map_k4v_size_n,
+    "spec_ngram_map_k4v_size_m",  &T::spec_ngram_map_k4v_size_m,
+    "spec_ngram_map_k4v_min_hits",&T::spec_ngram_map_k4v_min_hits,
+    // Auto-fit
+    "fit",                   &T::fit,
+    "fit_target_mib",        &T::fit_target_mib,
+    "fit_ctx",               &T::fit_ctx,
+    // GGUF metadata
+    "architecture",          &T::architecture,
+    "block_count",           &T::block_count,
+    "context_length",        &T::context_length,
+    "file_type",             &T::file_type
+  );
 };
