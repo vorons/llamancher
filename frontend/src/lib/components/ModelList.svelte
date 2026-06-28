@@ -37,6 +37,15 @@
       } else if (current === 'running' && status.model === model.name) {
         // Stop running model
         await api.stopServer();
+        // Keep spinner until server fully stops
+        const deadline = Date.now() + 8000;
+        while (Date.now() < deadline) {
+          const st = await api.serverStatus();
+          if (st.status === 'stopped') break;
+          await new Promise(r => setTimeout(r, 200));
+        }
+        serverStatus.set('stopped');
+        serverModel.set('');
         toast.info(`Stopped ${model.name}`);
       } else if (current === 'running') {
         // Another model is running — prompt stop+start

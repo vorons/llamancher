@@ -242,6 +242,15 @@
     }, 300);
   }
 
+  async function waitForStatus(target: string, timeout = 8000) {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
+      const st = await api.serverStatus();
+      if (st.status === target) return;
+      await new Promise(r => setTimeout(r, 200));
+    }
+  }
+
   async function handlePlayStop() {
     if (!model) return;
     serverLoading = true;
@@ -264,6 +273,9 @@
         serverStatus.set('starting');
       } else if (status.model === model.name) {
         await api.stopServer();
+        await waitForStatus('stopped');
+        serverModel.set('');
+        serverStatus.set('stopped');
       } else {
         toast.warning('Another model is running', {
           action: {
