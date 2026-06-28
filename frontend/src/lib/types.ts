@@ -15,14 +15,18 @@ export interface Preset {
   threads: number;
 
   // Model & Loading
-  gpu_layers: number;           // -1 = all layers
+  gpu_layers: number;           // 0-100
   tensor_split: string;
   numa: string;                  // '' | 'distribute' | 'isolate'
-  split_mode: string;            // '' | 'none' | 'layer' | 'row' | 'tensor'
-  main_gpu: number;              // -1 = auto
+  split_mode: string;            // 'none' | 'layer' | 'row' | 'tensor'
+  main_gpu: number;              // GPU index
   device: string;                // comma-separated device list
   mlock: boolean;
   no_mmap: boolean;
+  jinja: boolean;                // use jinja template engine
+  grammar: string;               // BNF grammar
+  grammar_file: string;          // grammar file path
+  json_schema: string;           // JSON schema
 
   // Context & Cache
   batch_size: number;
@@ -54,7 +58,7 @@ export interface Preset {
   log_file: string;
 
   // Speculative decoding
-  spec_type: string;             // '' | 'none' | 'draft-mtp' | 'draft-model' | 'ngram-*'
+  spec_type: string;             // 'none' | 'draft-mtp' | 'draft-model' | 'ngram-*'
   spec_draft_n_max: number;
   spec_draft_n_min: number;
   spec_draft_p_split: number;
@@ -63,6 +67,20 @@ export interface Preset {
   threads_draft: number;
   threads_batch_draft: number;
   spec_draft_poll: boolean;
+
+  // N-gram params
+  spec_ngram_mod_n_min: number;
+  spec_ngram_mod_n_max: number;
+  spec_ngram_mod_n_match: number;
+  spec_ngram_simple_size_n: number;
+  spec_ngram_simple_size_m: number;
+  spec_ngram_simple_min_hits: number;
+  spec_ngram_map_k_size_n: number;
+  spec_ngram_map_k_size_m: number;
+  spec_ngram_map_k_min_hits: number;
+  spec_ngram_map_k4v_size_n: number;
+  spec_ngram_map_k4v_size_m: number;
+  spec_ngram_map_k4v_min_hits: number;
 
   // Auto-fit
   fit: boolean;

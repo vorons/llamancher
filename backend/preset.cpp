@@ -72,10 +72,14 @@ Preset Preset::load(const std::string& model_name) {
   p.tensor_split = qs("tensor_split");
   p.numa = qs("numa");
   p.split_mode = qs("split_mode");
-  p.main_gpu = qi("main_gpu", -1);
+  p.main_gpu = qi("main_gpu", 0);
   p.device = qs("device");
   p.mlock = qb("mlock");
   p.no_mmap = qb("no_mmap");
+  p.jinja = qb("jinja");
+  p.grammar = qs("grammar");
+  p.grammar_file = qs("grammar_file");
+  p.json_schema = qs("json_schema");
 
   // Context & Cache
   p.batch_size = qi("batch_size", 2048);
@@ -116,6 +120,18 @@ Preset Preset::load(const std::string& model_name) {
   p.threads_draft = qi("threads_draft", 0);
   p.threads_batch_draft = qi("threads_batch_draft", 0);
   p.spec_draft_poll = qb("spec_draft_poll");
+  p.spec_ngram_mod_n_min = qi("spec_ngram_mod_n_min", 48);
+  p.spec_ngram_mod_n_max = qi("spec_ngram_mod_n_max", 64);
+  p.spec_ngram_mod_n_match = qi("spec_ngram_mod_n_match", 24);
+  p.spec_ngram_simple_size_n = qi("spec_ngram_simple_size_n", 12);
+  p.spec_ngram_simple_size_m = qi("spec_ngram_simple_size_m", 48);
+  p.spec_ngram_simple_min_hits = qi("spec_ngram_simple_min_hits", 1);
+  p.spec_ngram_map_k_size_n = qi("spec_ngram_map_k_size_n", 12);
+  p.spec_ngram_map_k_size_m = qi("spec_ngram_map_k_size_m", 48);
+  p.spec_ngram_map_k_min_hits = qi("spec_ngram_map_k_min_hits", 1);
+  p.spec_ngram_map_k4v_size_n = qi("spec_ngram_map_k4v_size_n", 12);
+  p.spec_ngram_map_k4v_size_m = qi("spec_ngram_map_k4v_size_m", 48);
+  p.spec_ngram_map_k4v_min_hits = qi("spec_ngram_map_k4v_min_hits", 1);
 
   // Auto-fit
   p.fit = true; // default
@@ -153,6 +169,10 @@ void Preset::save(const std::string& model_name) const {
   "device": "{}",
   "mlock": {},
   "no_mmap": {},
+  "jinja": {},
+  "grammar": "{}",
+  "grammar_file": "{}",
+  "json_schema": "{}",
   "batch_size": {},
   "ubatch_size": {},
   "cache_type_k": "{}",
@@ -183,6 +203,18 @@ void Preset::save(const std::string& model_name) const {
   "threads_draft": {},
   "threads_batch_draft": {},
   "spec_draft_poll": {},
+  "spec_ngram_mod_n_min": {},
+  "spec_ngram_mod_n_max": {},
+  "spec_ngram_mod_n_match": {},
+  "spec_ngram_simple_size_n": {},
+  "spec_ngram_simple_size_m": {},
+  "spec_ngram_simple_min_hits": {},
+  "spec_ngram_map_k_size_n": {},
+  "spec_ngram_map_k_size_m": {},
+  "spec_ngram_map_k_min_hits": {},
+  "spec_ngram_map_k4v_size_n": {},
+  "spec_ngram_map_k4v_size_m": {},
+  "spec_ngram_map_k4v_min_hits": {},
   "fit": {},
   "fit_target_mib": "{}",
   "fit_ctx": {},
@@ -196,6 +228,8 @@ void Preset::save(const std::string& model_name) const {
     numa, split_mode, main_gpu, device,
     mlock ? "true" : "false",
     no_mmap ? "true" : "false",
+    jinja ? "true" : "false",
+    grammar, grammar_file, json_schema,
     batch_size, ubatch_size,
     cache_type_k, cache_type_v,
     flash_attn ? "true" : "false",
@@ -211,6 +245,18 @@ void Preset::save(const std::string& model_name) const {
     spec_type, spec_draft_n_max, spec_draft_n_min, spec_draft_p_split,
     draft_model, draft_gpu_layers, threads_draft, threads_batch_draft,
     spec_draft_poll ? "true" : "false",
+    spec_ngram_mod_n_min,
+    spec_ngram_mod_n_max,
+    spec_ngram_mod_n_match,
+    spec_ngram_simple_size_n,
+    spec_ngram_simple_size_m,
+    spec_ngram_simple_min_hits,
+    spec_ngram_map_k_size_n,
+    spec_ngram_map_k_size_m,
+    spec_ngram_map_k_min_hits,
+    spec_ngram_map_k4v_size_n,
+    spec_ngram_map_k4v_size_m,
+    spec_ngram_map_k4v_min_hits,
     fit ? "true" : "false",
     fit_target_mib, fit_ctx,
     architecture,
@@ -229,7 +275,7 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
   };
 
   // Model & Loading
-  if (gpu_layers > 0 || gpu_layers == -1) {
+  if (gpu_layers > 0) {
     args.push_back("--n-gpu-layers");
     args.push_back(std::to_string(gpu_layers));
   }
@@ -245,16 +291,31 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
     args.push_back("--split-mode");
     args.push_back(split_mode);
   }
-  if (main_gpu >= 0) {
-    args.push_back("--main-gpu");
-    args.push_back(std::to_string(main_gpu));
-  }
+  args.push_back("--main-gpu");
+  args.push_back(std::to_string(main_gpu));
   if (!device.empty()) {
     args.push_back("--device");
     args.push_back(device);
   }
   if (mlock)    args.emplace_back("--mlock");
   if (no_mmap)  args.emplace_back("--no-mmap");
+
+  // Jinja & grammar / JSON schema
+  if (!jinja) {
+    args.emplace_back("--no-jinja");
+  }
+  if (!grammar.empty()) {
+    args.push_back("--grammar");
+    args.push_back(grammar);
+  }
+  if (!grammar_file.empty()) {
+    args.push_back("--grammar-file");
+    args.push_back(grammar_file);
+  }
+  if (!json_schema.empty()) {
+    args.push_back("--json-schema");
+    args.push_back(json_schema);
+  }
 
   // Context & Cache
   if (batch_size != 2048) {
@@ -328,7 +389,7 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
   }
 
   // Speculative decoding
-  if (!spec_type.empty()) {
+  if (!spec_type.empty() && spec_type != "none") {
     args.push_back("--spec-type");
     args.push_back(spec_type);
   }
@@ -363,6 +424,28 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
   if (spec_draft_poll) {
     args.push_back("--spec-draft-poll");
     args.push_back("1");
+  }
+
+  // N-gram speculative decoding params
+  if (spec_type.find("ngram") != std::string::npos) {
+    auto push_int = [&](const std::string& flag, int val, int def) {
+      if (val != def) {
+        args.push_back(flag);
+        args.push_back(std::to_string(val));
+      }
+    };
+    push_int("--spec-ngram-mod-n-min",      spec_ngram_mod_n_min, 48);
+    push_int("--spec-ngram-mod-n-max",      spec_ngram_mod_n_max, 64);
+    push_int("--spec-ngram-mod-n-match",    spec_ngram_mod_n_match, 24);
+    push_int("--spec-ngram-simple-size-n",  spec_ngram_simple_size_n, 12);
+    push_int("--spec-ngram-simple-size-m",  spec_ngram_simple_size_m, 48);
+    push_int("--spec-ngram-simple-min-hits", spec_ngram_simple_min_hits, 1);
+    push_int("--spec-ngram-map-k-size-n",   spec_ngram_map_k_size_n, 12);
+    push_int("--spec-ngram-map-k-size-m",   spec_ngram_map_k_size_m, 48);
+    push_int("--spec-ngram-map-k-min-hits", spec_ngram_map_k_min_hits, 1);
+    push_int("--spec-ngram-map-k4v-size-n", spec_ngram_map_k4v_size_n, 12);
+    push_int("--spec-ngram-map-k4v-size-m", spec_ngram_map_k4v_size_m, 48);
+    push_int("--spec-ngram-map-k4v-min-hits", spec_ngram_map_k4v_min_hits, 1);
   }
 
   // Auto-fit

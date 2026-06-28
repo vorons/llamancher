@@ -10,14 +10,18 @@ struct Preset {
   int threads = 4;
 
   // Model & Loading
-  int gpu_layers = 0;            // -1 = all layers
+  int gpu_layers = 0;            // number of layers offloaded to GPU
   std::string tensor_split;
   std::string numa;              // '' | distribute | isolate
-  std::string split_mode;        // '' | none | layer | row | tensor
-  int main_gpu = -1;             // -1 = auto
+  std::string split_mode;        // 'none' | layer | row | tensor
+  int main_gpu = 0;              // GPU index
   std::string device;            // comma-separated, e.g. "Vulkan0,Vulkan1"
   bool mlock = false;
   bool no_mmap = false;
+  bool jinja = true;             // use jinja template engine
+  std::string grammar;           // BNF grammar
+  std::string grammar_file;      // grammar file path
+  std::string json_schema;       // JSON schema
 
   // Context & Cache
   int batch_size = 2048;
@@ -49,7 +53,7 @@ struct Preset {
   std::string log_file;
 
   // Speculative decoding
-  std::string spec_type;         // '' | none | draft-mtp | draft-model | ngram-*
+  std::string spec_type;         // 'none' | draft-mtp | draft-model | ngram-*
   int spec_draft_n_max = 16;
   int spec_draft_n_min = 0;
   float spec_draft_p_split = 0.50f;
@@ -58,6 +62,20 @@ struct Preset {
   int threads_draft = 0;         // 0 = auto
   int threads_batch_draft = 0;   // 0 = auto
   bool spec_draft_poll = false;
+
+  // N-gram speculative decoding params (per variant)
+  int spec_ngram_mod_n_min = 48;
+  int spec_ngram_mod_n_max = 64;
+  int spec_ngram_mod_n_match = 24;
+  int spec_ngram_simple_size_n = 12;
+  int spec_ngram_simple_size_m = 48;
+  int spec_ngram_simple_min_hits = 1;
+  int spec_ngram_map_k_size_n = 12;
+  int spec_ngram_map_k_size_m = 48;
+  int spec_ngram_map_k_min_hits = 1;
+  int spec_ngram_map_k4v_size_n = 12;
+  int spec_ngram_map_k4v_size_m = 48;
+  int spec_ngram_map_k4v_min_hits = 1;
 
   // Auto-fit
   bool fit = true;

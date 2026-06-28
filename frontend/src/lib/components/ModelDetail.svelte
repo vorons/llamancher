@@ -18,11 +18,15 @@
     gpu_layers: 0,
     tensor_split: '',
     numa: '',
-    split_mode: '',
-    main_gpu: -1,
+    split_mode: 'none',
+    main_gpu: 0,
     device: '',
     mlock: false,
     no_mmap: false,
+    jinja: true,
+    grammar: '',
+    grammar_file: '',
+    json_schema: '',
     batch_size: 2048,
     ubatch_size: 512,
     cache_type_k: '',
@@ -44,7 +48,7 @@
     verbose: false,
     verbosity: 0,
     log_file: '',
-    spec_type: '',
+    spec_type: 'none',
     spec_draft_n_max: 16,
     spec_draft_n_min: 0,
     spec_draft_p_split: 0.50,
@@ -53,6 +57,18 @@
     threads_draft: 0,
     threads_batch_draft: 0,
     spec_draft_poll: false,
+    spec_ngram_mod_n_min: 48,
+    spec_ngram_mod_n_max: 64,
+    spec_ngram_mod_n_match: 24,
+    spec_ngram_simple_size_n: 12,
+    spec_ngram_simple_size_m: 48,
+    spec_ngram_simple_min_hits: 1,
+    spec_ngram_map_k_size_n: 12,
+    spec_ngram_map_k_size_m: 48,
+    spec_ngram_map_k_min_hits: 1,
+    spec_ngram_map_k4v_size_n: 12,
+    spec_ngram_map_k4v_size_m: 48,
+    spec_ngram_map_k4v_min_hits: 1,
     fit: true,
     fit_target_mib: '',
     fit_ctx: 4096,
@@ -86,11 +102,15 @@
           gpu_layers: pi(kv.gpu_layers, 0),
           tensor_split: kv.tensor_split || '',
           numa: kv.numa || '',
-          split_mode: kv.split_mode || '',
-          main_gpu: pi(kv.main_gpu, -1),
+          split_mode: kv.split_mode || 'none',
+          main_gpu: pi(kv.main_gpu, 0),
           device: kv.device || '',
           mlock: kv.mlock === 'true',
           no_mmap: kv.no_mmap === 'true',
+          jinja: kv.jinja !== 'false',
+          grammar: kv.grammar || '',
+          grammar_file: kv.grammar_file || '',
+          json_schema: kv.json_schema || '',
           batch_size: pi(kv.batch_size, 2048),
           ubatch_size: pi(kv.ubatch_size, 512),
           cache_type_k: kv.cache_type_k || '',
@@ -112,7 +132,7 @@
           verbose: kv.verbose === 'true',
           verbosity: pi(kv.verbosity, 0),
           log_file: kv.log_file || '',
-          spec_type: kv.spec_type || '',
+          spec_type: kv.spec_type || 'none',
           spec_draft_n_max: pi(kv.spec_draft_n_max, 16),
           spec_draft_n_min: pi(kv.spec_draft_n_min, 0),
           spec_draft_p_split: pf(kv.spec_draft_p_split, 0.50),
@@ -121,6 +141,18 @@
           threads_draft: pi(kv.threads_draft, 0),
           threads_batch_draft: pi(kv.threads_batch_draft, 0),
           spec_draft_poll: kv.spec_draft_poll === 'true',
+          spec_ngram_mod_n_min: pi(kv.spec_ngram_mod_n_min, 48),
+          spec_ngram_mod_n_max: pi(kv.spec_ngram_mod_n_max, 64),
+          spec_ngram_mod_n_match: pi(kv.spec_ngram_mod_n_match, 24),
+          spec_ngram_simple_size_n: pi(kv.spec_ngram_simple_size_n, 12),
+          spec_ngram_simple_size_m: pi(kv.spec_ngram_simple_size_m, 48),
+          spec_ngram_simple_min_hits: pi(kv.spec_ngram_simple_min_hits, 1),
+          spec_ngram_map_k_size_n: pi(kv.spec_ngram_map_k_size_n, 12),
+          spec_ngram_map_k_size_m: pi(kv.spec_ngram_map_k_size_m, 48),
+          spec_ngram_map_k_min_hits: pi(kv.spec_ngram_map_k_min_hits, 1),
+          spec_ngram_map_k4v_size_n: pi(kv.spec_ngram_map_k4v_size_n, 12),
+          spec_ngram_map_k4v_size_m: pi(kv.spec_ngram_map_k4v_size_m, 48),
+          spec_ngram_map_k4v_min_hits: pi(kv.spec_ngram_map_k4v_min_hits, 1),
           fit: kv.fit !== 'false',
           fit_target_mib: kv.fit_target_mib || '',
           fit_ctx: pi(kv.fit_ctx, 4096),
@@ -144,6 +176,10 @@
       device: preset.device,
       mlock: preset.mlock ? 'true' : 'false',
       no_mmap: preset.no_mmap ? 'true' : 'false',
+      jinja: preset.jinja ? 'true' : 'false',
+      grammar: preset.grammar,
+      grammar_file: preset.grammar_file,
+      json_schema: preset.json_schema,
       batch_size: String(preset.batch_size),
       ubatch_size: String(preset.ubatch_size),
       cache_type_k: preset.cache_type_k,
@@ -174,6 +210,18 @@
       threads_draft: String(preset.threads_draft),
       threads_batch_draft: String(preset.threads_batch_draft),
       spec_draft_poll: preset.spec_draft_poll ? 'true' : 'false',
+      spec_ngram_mod_n_min: String(preset.spec_ngram_mod_n_min),
+      spec_ngram_mod_n_max: String(preset.spec_ngram_mod_n_max),
+      spec_ngram_mod_n_match: String(preset.spec_ngram_mod_n_match),
+      spec_ngram_simple_size_n: String(preset.spec_ngram_simple_size_n),
+      spec_ngram_simple_size_m: String(preset.spec_ngram_simple_size_m),
+      spec_ngram_simple_min_hits: String(preset.spec_ngram_simple_min_hits),
+      spec_ngram_map_k_size_n: String(preset.spec_ngram_map_k_size_n),
+      spec_ngram_map_k_size_m: String(preset.spec_ngram_map_k_size_m),
+      spec_ngram_map_k_min_hits: String(preset.spec_ngram_map_k_min_hits),
+      spec_ngram_map_k4v_size_n: String(preset.spec_ngram_map_k4v_size_n),
+      spec_ngram_map_k4v_size_m: String(preset.spec_ngram_map_k4v_size_m),
+      spec_ngram_map_k4v_min_hits: String(preset.spec_ngram_map_k4v_min_hits),
       fit: preset.fit ? 'true' : 'false',
       fit_target_mib: preset.fit_target_mib,
       fit_ctx: String(preset.fit_ctx),
@@ -222,6 +270,10 @@
       serverLoading = false;
     }
   }
+
+  const isSpecActive = $derived(preset.spec_type !== 'none');
+  const isDraftMode = $derived(preset.spec_type === 'draft-model' || preset.spec_type === 'draft-mtp');
+  const isNgramMode = $derived(preset.spec_type.startsWith('ngram-'));
 
   const isActive = $derived(
     model ? $serverModel === model.name && $serverStatus === 'running' : false
@@ -313,25 +365,18 @@
         <div class="flex items-center justify-between gap-4 py-1.5">
           <div class="min-w-0">
             <Label for="gpu_layers" class="text-sm">GPU Layers</Label>
-            <p class="text-[11px] leading-tight text-muted-foreground">Layers offloaded to GPU VRAM (-1 = all)</p>
+            <p class="text-[11px] leading-tight text-muted-foreground">Layers offloaded to GPU VRAM</p>
           </div>
-          <div class="flex items-center gap-2 shrink-0">
-            <label class="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer select-none">
-              <input type="checkbox" checked={preset.gpu_layers === -1}
-                onchange={(e) => { preset.gpu_layers = e.currentTarget.checked ? -1 : 0; debouncedSave(); }}
-                class="accent-primary" />
-              All
-            </label>
-            <div class="flex items-center gap-2 w-44">
-              <Slider id="gpu_layers" type="single"
-                value={preset.gpu_layers === -1 ? 0 : preset.gpu_layers}
-                onValueChange={(v) => { preset.gpu_layers = v; debouncedSave(); }}
-                min={0} max={200} disabled={preset.gpu_layers === -1} />
-              <span class="text-sm tabular-nums w-8 text-right shrink-0">{preset.gpu_layers === -1 ? '∞' : preset.gpu_layers}</span>
-            </div>
+          <div class="flex items-center gap-2 w-44 shrink-0">
+            <Slider id="gpu_layers" type="single"
+              value={preset.gpu_layers}
+              onValueChange={(v) => { preset.gpu_layers = v; debouncedSave(); }}
+              min={0} max={100} />
+            <span class="text-sm tabular-nums w-8 text-right shrink-0">{preset.gpu_layers}</span>
           </div>
         </div>
 
+        {#if preset.split_mode !== 'none'}
         <div class="flex items-center justify-between gap-4 py-1.5">
           <div class="min-w-0">
             <Label for="tensor_split" class="text-sm">Tensor Split</Label>
@@ -340,6 +385,7 @@
           <Input id="tensor_split" placeholder="e.g. 8,8" class="w-36" value={preset.tensor_split}
             oninput={(e) => { preset.tensor_split = e.currentTarget.value; debouncedSave(); }} />
         </div>
+        {/if}
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <div class="min-w-0">
@@ -359,7 +405,6 @@
             <p class="text-[11px] leading-tight text-muted-foreground">How to split model across multiple GPUs</p>
           </div>
           <NativeSelect id="split_mode" class="w-36" value={preset.split_mode} onchange={(e) => { preset.split_mode = e.currentTarget.value; debouncedSave(); }}>
-            <NativeSelectOption value="">Default</NativeSelectOption>
             <NativeSelectOption value="none">None</NativeSelectOption>
             <NativeSelectOption value="layer">Layer</NativeSelectOption>
             <NativeSelectOption value="row">Row</NativeSelectOption>
@@ -372,8 +417,8 @@
             <Label for="main_gpu" class="text-sm">Main GPU</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">Main GPU when split-mode is none</p>
           </div>
-          <Input id="main_gpu" type="number" placeholder="-1" class="w-36" value={String(preset.main_gpu)}
-            oninput={(e) => { preset.main_gpu = parseInt(e.currentTarget.value) || -1; debouncedSave(); }} />
+          <Input id="main_gpu" type="number" placeholder="0" class="w-36" value={String(preset.main_gpu)}
+            oninput={(e) => { preset.main_gpu = parseInt(e.currentTarget.value) || 0; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
@@ -394,6 +439,43 @@
           <Label for="no_mmap" class="text-sm">no_mmap</Label>
           <Switch checked={preset.no_mmap} onCheckedChange={(c) => { preset.no_mmap = c; debouncedSave(); }} />
         </div>
+
+        <div class="flex items-center justify-between gap-4 py-1.5">
+          <div class="min-w-0">
+            <Label for="jinja" class="text-sm">Jinja</Label>
+            <p class="text-[11px] leading-tight text-muted-foreground">Use Jinja template engine for chat</p>
+          </div>
+          <Switch checked={preset.jinja} onCheckedChange={(c) => { preset.jinja = c; debouncedSave(); }} />
+        </div>
+
+        {#if !preset.jinja}
+        <div class="flex items-center justify-between gap-4 py-1.5">
+          <div class="min-w-0">
+            <Label for="grammar" class="text-sm">Grammar</Label>
+            <p class="text-[11px] leading-tight text-muted-foreground">BNF-like grammar constraint</p>
+          </div>
+          <Input id="grammar" placeholder="root ::= ..." class="w-36" value={preset.grammar}
+            oninput={(e) => { preset.grammar = e.currentTarget.value; debouncedSave(); }} />
+        </div>
+
+        <div class="flex items-center justify-between gap-4 py-1.5">
+          <div class="min-w-0">
+            <Label for="grammar_file" class="text-sm">Grammar File</Label>
+            <p class="text-[11px] leading-tight text-muted-foreground">Path to grammar file</p>
+          </div>
+          <Input id="grammar_file" placeholder="/path/to/grammar.gbnf" class="w-36" value={preset.grammar_file}
+            oninput={(e) => { preset.grammar_file = e.currentTarget.value; debouncedSave(); }} />
+        </div>
+
+        <div class="flex items-center justify-between gap-4 py-1.5">
+          <div class="min-w-0">
+            <Label for="json_schema" class="text-sm">JSON Schema</Label>
+            <p class="text-[11px] leading-tight text-muted-foreground">JSON schema to constrain generations</p>
+          </div>
+          <Input id="json_schema" placeholder={'{}'} class="w-36" value={preset.json_schema}
+            oninput={(e) => { preset.json_schema = e.currentTarget.value; debouncedSave(); }} />
+        </div>
+        {/if}
       </div>
 
       <Separator />
@@ -438,10 +520,7 @@
 
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="flash_attn" class="text-sm">Flash Attention</Label>
-          <NativeSelect id="flash_attn" class="w-36" value={preset.flash_attn ? 'on' : 'off'} onchange={(e) => { preset.flash_attn = e.currentTarget.value === 'on'; debouncedSave(); }}>
-            <NativeSelectOption value="off">Off</NativeSelectOption>
-            <NativeSelectOption value="on">On</NativeSelectOption>
-          </NativeSelect>
+          <Switch checked={preset.flash_attn} onCheckedChange={(c) => { preset.flash_attn = c; debouncedSave(); }} />
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
@@ -596,7 +675,7 @@
             <p class="text-[11px] leading-tight text-muted-foreground">Speculative decoding method</p>
           </div>
           <NativeSelect id="spec_type" class="w-36" value={preset.spec_type} onchange={(e) => { preset.spec_type = e.currentTarget.value; debouncedSave(); }}>
-            <NativeSelectOption value="">Off</NativeSelectOption>
+            <NativeSelectOption value="none">Off</NativeSelectOption>
             <NativeSelectOption value="draft-mtp">Draft MTP</NativeSelectOption>
             <NativeSelectOption value="draft-model">Draft Model</NativeSelectOption>
             <NativeSelectOption value="ngram-simple">N-gram Simple</NativeSelectOption>
@@ -606,6 +685,8 @@
           </NativeSelect>
         </div>
 
+        {#if isSpecActive}
+        <!-- Common speculative decoding params -->
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="spec_draft_n_max" class="text-sm">Draft N Max</Label>
           <Input id="spec_draft_n_max" type="number" class="w-36" value={String(preset.spec_draft_n_max)}
@@ -624,6 +705,8 @@
             oninput={(e) => { preset.spec_draft_p_split = parseFloat(e.currentTarget.value) || 0.5; debouncedSave(); }} />
         </div>
 
+        {#if isDraftMode}
+        <!-- Draft model-specific params -->
         <div class="flex items-center justify-between gap-4 py-1.5">
           <Label for="draft_model" class="text-sm">Draft Model</Label>
           <Input id="draft_model" placeholder="/path/to/draft.gguf" class="w-36" value={preset.draft_model}
@@ -652,6 +735,87 @@
           <Label for="spec_draft_poll" class="text-sm">Draft Polling</Label>
           <Switch checked={preset.spec_draft_poll} onCheckedChange={(c) => { preset.spec_draft_poll = c; debouncedSave(); }} />
         </div>
+        {/if}
+
+        {#if isNgramMode}
+        <!-- N-gram params -->
+        <div class="mt-2 space-y-1">
+          <p class="text-[11px] font-medium text-muted-foreground">N-gram Mod</p>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_mod_n_min" class="text-sm">N Min</Label>
+            <Input id="spec_ngram_mod_n_min" type="number" class="w-36" value={String(preset.spec_ngram_mod_n_min)}
+              oninput={(e) => { preset.spec_ngram_mod_n_min = parseInt(e.currentTarget.value) || 48; debouncedSave(); }} />
+          </div>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_mod_n_max" class="text-sm">N Max</Label>
+            <Input id="spec_ngram_mod_n_max" type="number" class="w-36" value={String(preset.spec_ngram_mod_n_max)}
+              oninput={(e) => { preset.spec_ngram_mod_n_max = parseInt(e.currentTarget.value) || 64; debouncedSave(); }} />
+          </div>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_mod_n_match" class="text-sm">N Match</Label>
+            <Input id="spec_ngram_mod_n_match" type="number" class="w-36" value={String(preset.spec_ngram_mod_n_match)}
+              oninput={(e) => { preset.spec_ngram_mod_n_match = parseInt(e.currentTarget.value) || 24; debouncedSave(); }} />
+          </div>
+        </div>
+
+        <div class="mt-2 space-y-1">
+          <p class="text-[11px] font-medium text-muted-foreground">N-gram Simple / Map-K / Map-K4V</p>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_simple_size_n" class="text-sm">Size N</Label>
+            <Input id="spec_ngram_simple_size_n" type="number" class="w-36" value={String(preset.spec_ngram_simple_size_n)}
+              oninput={(e) => { preset.spec_ngram_simple_size_n = parseInt(e.currentTarget.value) || 12; debouncedSave(); }} />
+          </div>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_simple_size_m" class="text-sm">Size M</Label>
+            <Input id="spec_ngram_simple_size_m" type="number" class="w-36" value={String(preset.spec_ngram_simple_size_m)}
+              oninput={(e) => { preset.spec_ngram_simple_size_m = parseInt(e.currentTarget.value) || 48; debouncedSave(); }} />
+          </div>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_simple_min_hits" class="text-sm">Min Hits</Label>
+            <Input id="spec_ngram_simple_min_hits" type="number" class="w-36" value={String(preset.spec_ngram_simple_min_hits)}
+              oninput={(e) => { preset.spec_ngram_simple_min_hits = parseInt(e.currentTarget.value) || 1; debouncedSave(); }} />
+          </div>
+        </div>
+
+        <div class="mt-2 space-y-1">
+          <p class="text-[11px] font-medium text-muted-foreground">N-gram Map-K (separate)</p>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_map_k_size_n" class="text-sm">Size N</Label>
+            <Input id="spec_ngram_map_k_size_n" type="number" class="w-36" value={String(preset.spec_ngram_map_k_size_n)}
+              oninput={(e) => { preset.spec_ngram_map_k_size_n = parseInt(e.currentTarget.value) || 12; debouncedSave(); }} />
+          </div>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_map_k_size_m" class="text-sm">Size M</Label>
+            <Input id="spec_ngram_map_k_size_m" type="number" class="w-36" value={String(preset.spec_ngram_map_k_size_m)}
+              oninput={(e) => { preset.spec_ngram_map_k_size_m = parseInt(e.currentTarget.value) || 48; debouncedSave(); }} />
+          </div>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_map_k_min_hits" class="text-sm">Min Hits</Label>
+            <Input id="spec_ngram_map_k_min_hits" type="number" class="w-36" value={String(preset.spec_ngram_map_k_min_hits)}
+              oninput={(e) => { preset.spec_ngram_map_k_min_hits = parseInt(e.currentTarget.value) || 1; debouncedSave(); }} />
+          </div>
+        </div>
+
+        <div class="mt-2 space-y-1">
+          <p class="text-[11px] font-medium text-muted-foreground">N-gram Map-K4V (separate)</p>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_map_k4v_size_n" class="text-sm">Size N</Label>
+            <Input id="spec_ngram_map_k4v_size_n" type="number" class="w-36" value={String(preset.spec_ngram_map_k4v_size_n)}
+              oninput={(e) => { preset.spec_ngram_map_k4v_size_n = parseInt(e.currentTarget.value) || 12; debouncedSave(); }} />
+          </div>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_map_k4v_size_m" class="text-sm">Size M</Label>
+            <Input id="spec_ngram_map_k4v_size_m" type="number" class="w-36" value={String(preset.spec_ngram_map_k4v_size_m)}
+              oninput={(e) => { preset.spec_ngram_map_k4v_size_m = parseInt(e.currentTarget.value) || 48; debouncedSave(); }} />
+          </div>
+          <div class="flex items-center justify-between gap-4 py-1.5">
+            <Label for="spec_ngram_map_k4v_min_hits" class="text-sm">Min Hits</Label>
+            <Input id="spec_ngram_map_k4v_min_hits" type="number" class="w-36" value={String(preset.spec_ngram_map_k4v_min_hits)}
+              oninput={(e) => { preset.spec_ngram_map_k4v_min_hits = parseInt(e.currentTarget.value) || 1; debouncedSave(); }} />
+          </div>
+        </div>
+        {/if}
+        {/if}
       </div>
 
       <Separator />
