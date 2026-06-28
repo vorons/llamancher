@@ -430,7 +430,8 @@
 </script>
 
 {#if model}
-  <div class="flex-1 overflow-y-auto p-4 space-y-5">
+  <!-- ponytail: translateZ(0) forces GPU compositing layer to prevent font blur on scroll in WebKit -->
+  <div class="flex-1 overflow-y-auto p-4 space-y-5" style="transform: translateZ(0);">
     {#if loadingPreset}
       <div class="flex items-center justify-center h-32">
         <Loader2 size={24} class="animate-spin text-muted-foreground" />
@@ -451,7 +452,7 @@
         </div>
         <div class="flex items-center gap-2 shrink-0">
           <button
-            class="flex items-center justify-center h-8 w-8 rounded-md border border-border bg-secondary hover:bg-accent text-muted-foreground hover:text-foreground transition-all active:scale-95"
+            class="flex items-center justify-center h-8 w-8 rounded-md border border-border bg-secondary hover:bg-accent text-muted-foreground hover:text-foreground transition-colors active:scale-95"
             onclick={() => logOpen = true}
             title="Server logs"
           >
@@ -839,7 +840,7 @@
           <div class="flex items-center gap-2">
             <span class="text-xs text-muted-foreground truncate max-w-28">{preset.json_schema ? (preset.json_schema.length > 30 ? preset.json_schema.slice(0, 30) + '…' : preset.json_schema) : '—'}</span>
             <button
-              class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all"
+              class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               onclick={(e) => openPopover('json_schema', preset.json_schema, e.currentTarget)}
               title="Edit JSON schema"
             >
@@ -858,7 +859,7 @@
             <Input id="json_schema_file" placeholder="/path/to/schema.json" class="w-28" value={preset.json_schema_file}
               oninput={(e) => { preset.json_schema_file = e.currentTarget.value; debouncedSave(); }} />
             <button
-              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               onclick={async () => {
                 const path = await api.pickFile();
                 if (path) { preset.json_schema_file = path; debouncedSave(); }
@@ -894,7 +895,7 @@
           <div class="flex items-center gap-2">
             <span class="text-xs text-muted-foreground truncate max-w-28">{preset.grammar ? (preset.grammar.length > 30 ? preset.grammar.slice(0, 30) + '…' : preset.grammar) : '—'}</span>
             <button
-              class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all"
+              class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               onclick={(e) => openPopover('grammar', preset.grammar, e.currentTarget)}
               title="Edit grammar"
             >
@@ -909,7 +910,7 @@
             <Input id="grammar_file" placeholder="/path/to/grammar.gbnf" class="w-28" value={preset.grammar_file}
               oninput={(e) => { preset.grammar_file = e.currentTarget.value; debouncedSave(); }} />
             <button
-              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               onclick={async () => {
                 const path = await api.pickGrammarFile();
                 if (path) { preset.grammar_file = path; debouncedSave(); }
@@ -936,7 +937,7 @@
                 : (preset.chat_template ? (preset.chat_template.length > 30 ? preset.chat_template.slice(0, 30) + '…' : preset.chat_template) : '—')}
             </span>
             <button
-              class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all"
+              class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               onclick={(e) => openPopover('chat_template', preset.chat_template || model?.chat_template || '', e.currentTarget)}
               title="Edit chat template"
             >
@@ -990,7 +991,7 @@
                 <Input id="draft_model" placeholder="/path/to/draft.gguf" class="w-28" value={preset.draft_model}
                   oninput={(e) => { preset.draft_model = e.currentTarget.value; debouncedSave(); }} />
                 <button
-                  class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+                  class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                   onclick={async () => {
                     const path = await api.pickFile();
                     if (path) { preset.draft_model = path; debouncedSave(); }
@@ -1037,7 +1038,7 @@
             <Input id="mmproj" placeholder="/path/to/mmproj.gguf" class="w-28" value={preset.mmproj}
               oninput={(e) => { preset.mmproj = e.currentTarget.value; debouncedSave(); }} />
             <button
-              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               onclick={async () => {
                 const path = await api.pickFile();
                 if (path) { preset.mmproj = path; debouncedSave(); }
@@ -1149,7 +1150,7 @@
             <Input id="lora" placeholder="/path/to/lora.gguf" class="w-28" value={preset.lora}
               oninput={(e) => { preset.lora = e.currentTarget.value; debouncedSave(); }} />
             <button
-              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               onclick={async () => {
                 const path = await api.pickFile();
                 if (path) { preset.lora = path; debouncedSave(); }
@@ -1181,7 +1182,7 @@
             <Input id="control_vector" placeholder="/path/to/control.gguf" class="w-28" value={preset.control_vector}
               oninput={(e) => { preset.control_vector = e.currentTarget.value; debouncedSave(); }} />
             <button
-              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               onclick={async () => {
                 const path = await api.pickFile();
                 if (path) { preset.control_vector = path; debouncedSave(); }}
@@ -1232,7 +1233,7 @@
             <Input id="log_file" placeholder="/path/to/llama.log" class="w-28" value={preset.log_file}
               oninput={(e) => { preset.log_file = e.currentTarget.value; debouncedSave(); }} />
             <button
-              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               onclick={async () => {
                 const path = await api.pickFile();
                 if (path) { preset.log_file = path; debouncedSave(); }}
@@ -1268,7 +1269,7 @@
             <Input id="slot_save_path" placeholder="/path/to/slots" class="w-28" value={preset.slot_save_path}
               oninput={(e) => { preset.slot_save_path = e.currentTarget.value; debouncedSave(); }} />
             <button
-              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               onclick={async () => {
                 const path = await api.pickFolder();
                 if (path) { preset.slot_save_path = path; debouncedSave(); }}
