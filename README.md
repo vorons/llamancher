@@ -10,12 +10,14 @@ Scans a directory for `.gguf` files, lets you configure per-model presets (conte
 ## Features
 
 - **Model browser** — scans a directory for GGUF files, detects quantization from filename
-- **Per-model presets** — полный редактор всех параметров llama-server: размер контекста, слои GPU, семплинг (temp, top-k/p, min-p, repeat/presence/frequency penalty, mirostat), KV cache (batch/ubatch size, cache types, flash-attn), speculative decoding, auto-fit и другие
+- **Rich metadata extraction** — reads 27+ GGUF metadata fields (model name, description, author, license, architecture params, MoE config, sampling defaults, tokenizer config, chat templates, vision/audio support) and caches them in the preset
+- **Per-model presets** — полный редактор всех параметров llama-server: размер контекста, слои GPU, семплинг (temp, top-k/p, min-p, repeat/presence/frequency penalty, mirostat), KV cache (batch/ubatch size, cache types, flash-attn), speculative decoding, auto-fit и другие. Metadata из GGUF (architecture, sampling defaults) автоматически заполняются при создании пресета
 - **Server lifecycle** — start/stop `llama-server`, health polling, status displayed in UI
 - **Persistent settings** — `~/.config/llamancher/settings.json`
 - **Persistent presets** — `~/.llamancher/models/<name>.preset.json`
 - **Borderless window** — custom title bar via Svelte, `window::decoration::partial`
 - **Embedded frontend** — production builds bundle the Svelte app into the binary (no extra files)
+- **Array-safe GGUF parser** — рекурсивный `skip_value()` не падает на массивах и неизвестных типах данных
 
 ## Requirements
 
@@ -130,7 +132,7 @@ cmake --build build --preset debug     # debug (fast iteration)
 }
 ```
 
-**`~/.llamancher/models/<name>.preset.json`**
+**`~/.llamancher/models/<name>.preset.json`** — при первом сканировании пресет автоматически заполняется метаданными из GGUF-файла. При повторном сканировании метаданные обновляются.
 
 ```json
 {
@@ -176,9 +178,38 @@ cmake --build build --preset debug     # debug (fast iteration)
   "spec_draft_poll": false,
   "fit": true,
   "fit_target_mib": "",
-  "fit_ctx": 4096
+  "fit_ctx": 4096,
+  "display_name": "Qwen2.5-7B-Instruct",
+  "size_label": "7B",
+  "license": "apache-2.0",
+  "author": "Qwen",
+  "version": "",
+  "url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct",
+  "source_url": "",
+  "languages": "en,zh",
+  "vocab_size": 152064,
+  "embedding_length": 3584,
+  "feed_forward_length": 18944,
+  "head_count": 28,
+  "head_count_kv": 4,
+  "expert_count": 0,
+  "expert_used_count": 0,
+  "tokenizer_model": "gpt2",
+  "bos_token_id": 151643,
+  "eos_token_id": 151643,
+  "chat_template": "{% for message in messages %}{{'<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>' + '\\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\\n' }}{% endif %}",
+  "chat_templates": "chatml,jinja",
+  "has_vision": false,
+  "has_audio": false,
+  "sample_temp": 0.7,
+  "sample_top_k": 20,
+  "sample_top_p": 0.8,
+  "sample_min_p": 0.0,
+  "sample_mirostat": 0
 }
 ```
+
+> Поля метаданных (`display_name`, `vocab_size`, `sample_*` и др.) автоматически читаются из GGUF-файла. Если файл не содержит поле — в JSON попадает пустая строка или `0`. Старые пресеты без этих полей продолжают работать (используются нулевые значения по умолчанию). `general.sampling.*` переопределяют жёсткие дефолты семплинга, если значение > 0.001.
 
 Секции редактора на экране деталей модели:
 
