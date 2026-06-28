@@ -10,7 +10,8 @@
 
   // ponytail: non-reactive locals — avoid triggering $effect when set by async callback
   let logPath = '';
-  let pollTimer = $state<ReturnType<typeof setInterval> | undefined>();
+  // ponytail: intentionally non-reactive — pollTimer is only used in $effect cleanup and fetchLog callback
+  let pollTimer: ReturnType<typeof setInterval> | undefined;
   let fetching = false;
 
   async function fetchLog() {

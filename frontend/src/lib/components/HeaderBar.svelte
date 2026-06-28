@@ -5,6 +5,8 @@
   import { cn } from '$lib/utils';
   import { Separator } from '$lib/ui/separator';
 
+  const btn = "flex items-center justify-center h-7 w-7 rounded-md hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all active:scale-95";
+
   function handleRefresh() {
     window.dispatchEvent(new CustomEvent('refresh-models'));
   }
@@ -45,7 +47,7 @@
   <div class="flex items-center gap-2" data-webview-ignore>
     {#if $view === 'detail'}
       <button
-        class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all active:scale-95"
+        class={btn}
         onclick={goBack}
         data-webview-ignore
       >
@@ -53,7 +55,7 @@
       </button>
     {:else}
       <button
-        class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all active:scale-95"
+        class={btn}
         onclick={handleRefresh}
         disabled={$scanning}
         data-webview-ignore
@@ -78,7 +80,7 @@
   <!-- Right section -->
   <div class="flex items-center gap-2" data-webview-ignore>
     <button
-      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all active:scale-95"
+      class={btn}
       onclick={() => settingsOpen.set(true)}
       data-webview-ignore
     >
@@ -88,14 +90,14 @@
     <Separator orientation="vertical" class="h-5 bg-foreground/10" />
 
     <button
-      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all active:scale-95"
+      class={btn}
       data-webview-minimize
       data-webview-ignore
     >
       <Minus size={16} />
     </button>
     <button
-      class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all active:scale-95"
+      class={btn}
       data-webview-maximize
       data-webview-ignore
     >

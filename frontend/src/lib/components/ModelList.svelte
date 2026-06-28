@@ -165,6 +165,7 @@
         <input
           type="text"
           placeholder="Search models…"
+          aria-label="Search models"
           bind:value={searchQuery}
           class="w-full h-8 pl-8 pr-3 rounded-md border border-border bg-card text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
         />
