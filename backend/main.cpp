@@ -61,57 +61,80 @@ int main(int argc, char* argv[]) {
     window->set_background({.r = 10, .g = 10, .b = 10, .a = 255});
 
     // ── Status bridge (observer) ───────────────────────────────────
-    auto bridge = std::make_unique<StatusBridge>(webview);
+    auto bridge = std::make_shared<StatusBridge>(webview);
 
-    // server_mgr declared last so it is destroyed before bridge
     auto server_mgr = std::make_shared<ServerManager>();
-    server_mgr->set_observer(bridge.get());
+    server_mgr->set_observer(bridge);
 
     // ── Exposed API ────────────────────────────────────────────────
 
     // ── File pickers (native dialogs, non-blocking) ─────────────────
 
-    auto show_file_chooser = [](GtkWindow* parent, const char* title,
-                                 GtkFileChooserAction action,
-                                 saucer::executor<std::string> exec,
-                                 GtkFileFilter* filter = nullptr) {
-      auto* native = gtk_file_chooser_native_new(title, parent, action, "_Open", "_Cancel");
-      if (filter) gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(native), filter);
+    // ponytail: uses new GtkFileDialog (GTK 4.10+) instead of deprecated GtkFileChooserNative.
+    // The action enum is only used as an internal dispatch key, not passed to deprecated functions.
+    auto show_file_dialog = [](GtkWindow* parent, const char* title,
+                                GtkFileChooserAction action,
+                                saucer::executor<std::string> exec,
+                                GtkFileFilter* filter = nullptr) {
+      auto* dialog = gtk_file_dialog_new();
+      gtk_file_dialog_set_title(dialog, title);
 
-      auto* exec_ptr = new saucer::executor<std::string>(std::move(exec));
-      g_signal_connect_data(GTK_NATIVE_DIALOG(native), "response", G_CALLBACK(+[](
-        GtkNativeDialog* dialog, int response, gpointer data) {
-          auto& exec = *static_cast<saucer::executor<std::string>*>(data);
-          if (response == GTK_RESPONSE_ACCEPT) {
-            GFile* file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-            if (file) {
-              char* path = g_file_get_path(file);
-              exec.resolve(path ? std::string(path) : std::string{});
-              g_free(path);
-              g_object_unref(file);
-            } else {
-              exec.resolve(std::string{});
-            }
-          } else {
-            exec.resolve(std::string{});
-          }
-      }), exec_ptr, +[](gpointer data, GClosure*) {
-        delete static_cast<saucer::executor<std::string>*>(data);
-      }, GConnectFlags(0));
+      if (filter) {
+        auto* store = g_list_store_new(GTK_TYPE_FILE_FILTER);
+        g_list_store_append(store, filter);
+        g_object_unref(filter);
+        gtk_file_dialog_set_filters(dialog, G_LIST_MODEL(store));
+        gtk_file_dialog_set_default_filter(dialog, filter);
+        g_object_unref(store);
+      }
 
-      gtk_native_dialog_show(GTK_NATIVE_DIALOG(native));
-      g_object_unref(native);
+      struct Cb {
+        saucer::executor<std::string> exec;
+        GtkFileChooserAction action;
+      };
+      auto* cb = new Cb{std::move(exec), action};
+
+      auto handler = +[](GObject* source, GAsyncResult* result, gpointer data) {
+        auto* cb = static_cast<Cb*>(data);
+        GError* error = nullptr;
+        GFile* file = nullptr;
+
+        if (cb->action == GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER) {
+          file = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &error);
+        } else {
+          file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), result, &error);
+        }
+
+        if (file) {
+          char* path = g_file_get_path(file);
+          cb->exec.resolve(path ? std::string(path) : std::string{});
+          g_free(path);
+          g_object_unref(file);
+        } else {
+          cb->exec.resolve(std::string{});
+        }
+        g_clear_error(&error);
+        delete cb;
+      };
+
+      if (action == GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER) {
+        gtk_file_dialog_select_folder(dialog, parent, nullptr, handler, cb);
+      } else {
+        gtk_file_dialog_open(dialog, parent, nullptr, handler, cb);
+      }
+
+      g_object_unref(dialog);
     };
 
     // ponytail: no parent window (nullptr) avoids GTK header dependency in this TU.
     // The dialog still works — it just won't be strictly modal to the app window.
-    webview->expose("pick_file", [show_file_chooser](saucer::executor<std::string> exec) {
-      show_file_chooser(nullptr, "Select llama-server executable",
+    webview->expose("pick_file", [show_file_dialog](saucer::executor<std::string> exec) {
+      show_file_dialog(nullptr, "Select llama-server executable",
                         GTK_FILE_CHOOSER_ACTION_OPEN, std::move(exec));
     });
 
-    webview->expose("pick_folder", [show_file_chooser](saucer::executor<std::string> exec) {
-      show_file_chooser(nullptr, "Select models directory",
+    webview->expose("pick_folder", [show_file_dialog](saucer::executor<std::string> exec) {
+      show_file_dialog(nullptr, "Select models directory",
                         GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, std::move(exec));
     });
 
@@ -511,12 +534,12 @@ int main(int argc, char* argv[]) {
 
     // ── Grammar file picker ────────────────────────────────────────
 
-    webview->expose("pick_grammar_file", [show_file_chooser](saucer::executor<std::string> exec) {
+    webview->expose("pick_grammar_file", [show_file_dialog](saucer::executor<std::string> exec) {
       auto* filter = gtk_file_filter_new();
       gtk_file_filter_set_name(filter, "Grammar files");
       gtk_file_filter_add_pattern(filter, "*.gbnf");
       gtk_file_filter_add_pattern(filter, "*.txt");
-      show_file_chooser(nullptr, "Select grammar file",
+      show_file_dialog(nullptr, "Select grammar file",
                         GTK_FILE_CHOOSER_ACTION_OPEN, std::move(exec), filter);
     });
 

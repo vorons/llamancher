@@ -29,7 +29,7 @@ public:
   void          set_current_model(const std::string& name) { current_model_ = name; }
   int           port() const;
 
-  void set_observer(ServerObserver* obs) { observer_ = obs; }
+  void set_observer(std::shared_ptr<ServerObserver> obs) { observer_ = std::move(obs); }
   std::string log_path() const { return log_path_; }
 
 private:
@@ -44,5 +44,5 @@ private:
   pid_t pid_ = 0;
   std::unique_ptr<std::thread> health_thread_;
   std::atomic<bool> running_{false};
-  ServerObserver* observer_ = nullptr;
+  std::shared_ptr<ServerObserver> observer_;
 };

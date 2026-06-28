@@ -18,9 +18,7 @@ namespace fs = std::filesystem;
 ServerManager::ServerManager() = default;
 ServerManager::~ServerManager() {
   // stop() sends SIGTERM, waits up to 5s, then SIGKILL — then joins the health thread.
-  // observer_ is nulled after so the health thread (already joined) can't call into it.
   stop();
-  observer_ = nullptr;
 }
 
 ServerStatus ServerManager::status() const { return status_.load(); }
