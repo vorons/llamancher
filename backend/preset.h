@@ -89,6 +89,30 @@ struct Preset {
   uint32_t context_length = 0;
   int32_t file_type = -1;
 
+  // Extended metadata (cached from GGUF)
+  std::string display_name;
+  std::string size_label;
+  std::string license;
+  std::string author;
+  std::string version;
+  std::string url;
+  std::string source_url;
+  std::string languages;         // comma-joined
+  uint32_t vocab_size = 0;
+  uint32_t embedding_length = 0;
+  uint32_t feed_forward_length = 0;
+  uint32_t head_count = 0;
+  uint32_t head_count_kv = 0;
+  uint32_t expert_count = 0;
+  uint32_t expert_used_count = 0;
+  std::string tokenizer_model;
+  int32_t bos_token_id = -1;
+  int32_t eos_token_id = -1;
+  std::string chat_template;
+  std::string chat_templates;    // comma-joined
+  bool has_vision = false;
+  bool has_audio = false;
+
   static Preset load(const std::string& model_name);
   void save(const std::string& model_name) const;
   std::filesystem::path path(const std::string& model_name) const;
@@ -171,9 +195,32 @@ struct glz::meta<Preset> {
     "fit_target_mib",        &T::fit_target_mib,
     "fit_ctx",               &T::fit_ctx,
     // GGUF metadata
-    "architecture",          &T::architecture,
-    "block_count",           &T::block_count,
-    "context_length",        &T::context_length,
-    "file_type",             &T::file_type
+    "architecture",            &T::architecture,
+    "block_count",             &T::block_count,
+    "context_length",          &T::context_length,
+    "file_type",               &T::file_type,
+    // Extended metadata
+    "display_name",            &T::display_name,
+    "size_label",              &T::size_label,
+    "license",                 &T::license,
+    "author",                  &T::author,
+    "version",                 &T::version,
+    "url",                     &T::url,
+    "source_url",              &T::source_url,
+    "languages",               &T::languages,
+    "vocab_size",              &T::vocab_size,
+    "embedding_length",        &T::embedding_length,
+    "feed_forward_length",     &T::feed_forward_length,
+    "head_count",              &T::head_count,
+    "head_count_kv",           &T::head_count_kv,
+    "expert_count",            &T::expert_count,
+    "expert_used_count",       &T::expert_used_count,
+    "tokenizer_model",         &T::tokenizer_model,
+    "bos_token_id",            &T::bos_token_id,
+    "eos_token_id",            &T::eos_token_id,
+    "chat_template",           &T::chat_template,
+    "chat_templates",          &T::chat_templates,
+    "has_vision",              &T::has_vision,
+    "has_audio",               &T::has_audio
   );
 };

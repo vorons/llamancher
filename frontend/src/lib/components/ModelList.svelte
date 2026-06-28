@@ -95,7 +95,7 @@
           tabindex="0"
         >
           <div class="min-w-0 flex-1">
-            <div class="text-sm font-medium truncate">{model.name}</div>
+            <div class="text-sm font-medium truncate">{model.display_name || model.name}</div>
             <div class="text-xs text-muted-foreground mt-0.5">
               {#if model.architecture}
                 <span class="font-mono uppercase tracking-tight text-[10px]">{model.architecture}</span>

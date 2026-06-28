@@ -7,6 +7,30 @@ export interface ModelInfo {
   block_count: string;
   context_length: string;
   file_type: string;
+
+  // Extended metadata
+  display_name: string;
+  size_label: string;
+  license: string;
+  author: string;
+  version: string;
+  url: string;
+  source_url: string;
+  languages: string;
+  vocab_size: string;
+  embedding_length: string;
+  feed_forward_length: string;
+  head_count: string;
+  head_count_kv: string;
+  expert_count: string;
+  expert_used_count: string;
+  tokenizer_model: string;
+  bos_token_id: string;
+  eos_token_id: string;
+  chat_template: string;
+  chat_templates: string;
+  has_vision: string;
+  has_audio: string;
 }
 
 export interface Preset {
