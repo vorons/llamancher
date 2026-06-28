@@ -9,6 +9,10 @@
 
   let loading = $state<string | null>(null); // model name being toggled
 
+  function modelDisplayName(m: ModelInfo): string {
+    return m.display_name && m.display_name.trim() !== '' ? m.display_name : m.name;
+  }
+
   async function handlePlayStop(e: MouseEvent, model: ModelInfo) {
     e.stopPropagation();
     loading = model.name;
@@ -31,10 +35,10 @@
         } else if (result === 'server_not_found') {
           toast.error('llama-server executable not found at ' + s.llama_server_path);
         } else {
-          serverModel.set(model.name);
+          serverModel.set(modelDisplayName(model));
           serverStatus.set('starting');
         }
-      } else if (current === 'running' && status.model === model.name) {
+      } else if (current === 'running' && status.model === modelDisplayName(model)) {
         // Stop running model
         await api.stopServer();
         // Keep spinner until server fully stops
@@ -46,7 +50,7 @@
         }
         serverStatus.set('stopped');
         serverModel.set('');
-        toast.info(`Stopped ${model.name}`);
+        toast.info(`Stopped ${modelDisplayName(model)}`);
       } else if (current === 'running') {
         // Another model is running — prompt stop+start
         toast.warning('Another model is running', {
@@ -106,7 +110,7 @@
           </div>
 
           <ServerButton
-            modelName={model.name}
+            modelName={modelDisplayName(model)}
             serverModelName={$serverModel}
             serverStatus={$serverStatus}
             loading={loading === model.name}
