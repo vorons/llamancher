@@ -7,6 +7,7 @@ struct Settings {
   std::string llama_server_path;
   std::string models_dir;
   bool auto_start_server = false;
+  std::string theme = "dark"; // "dark" | "light"
 
   Settings();
 
@@ -24,6 +25,7 @@ struct glz::meta<Settings> {
   static constexpr auto value = object(
     "llama_server_path", &T::llama_server_path,
     "models_dir",        &T::models_dir,
-    "auto_start_server", &T::auto_start_server
+    "auto_start_server", &T::auto_start_server,
+    "theme",              &T::theme
   );
 };

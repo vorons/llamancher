@@ -11,6 +11,13 @@
   import SettingsDialog from '$lib/components/SettingsDialog.svelte';
   import type { ModelInfo } from '$lib/types';
 
+  function applyTheme(t: string) {
+    document.documentElement.dataset.theme = t === 'light' ? 'light' : 'dark';
+  }
+
+  // React to theme changes
+  settings.subscribe((s) => applyTheme(s.theme));
+
   onMount(() => {
     // Load settings
     api.settings().then((kv) => {
@@ -18,6 +25,7 @@
         llama_server_path: kv.llama_server_path,
         models_dir: kv.models_dir,
         auto_start_server: kv.auto_start_server === 'true',
+        theme: kv.theme === 'light' ? 'light' : 'dark',
       });
     }).catch(() => {
       // Running outside saucer — use defaults
