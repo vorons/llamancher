@@ -1,10 +1,11 @@
 <script lang="ts">
   import { selectedModel, serverStatus, serverModel, settings } from '$lib/stores.svelte';
-  import { Play, Square, Loader2 } from '@lucide/svelte';
+  import ServerButton from '$lib/components/ServerButton.svelte';
+  import { Loader2 } from '@lucide/svelte';
   import { api } from '$lib/saucer';
   import { toast } from 'svelte-sonner';
   import { get } from 'svelte/store';
-  import { cn } from '$lib/utils';
+
   import { Separator } from '$lib/ui/separator';
   import { Label } from '$lib/ui/label';
   import { Input } from '$lib/ui/input';
@@ -285,12 +286,7 @@
   const isDraftMode = $derived(preset.spec_type === 'draft-model' || preset.spec_type === 'draft-mtp');
   const isNgramMode = $derived(preset.spec_type.startsWith('ngram-'));
 
-  const isActive = $derived(
-    model ? $serverModel === model.name && $serverStatus === 'running' : false
-  );
-  const isStarting = $derived(
-    model ? $serverModel === model.name && $serverStatus === 'starting' : false
-  );
+
 </script>
 
 {#if model}
@@ -312,25 +308,13 @@
             {model.quantization} · {model.size}
           </div>
         </div>
-        <button
-          class={cn(
-            'flex items-center justify-center h-8 w-8 rounded-md transition-all active:scale-95 shrink-0',
-            isActive
-              ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-              : 'bg-secondary hover:bg-accent text-foreground',
-          )}
+        <ServerButton
+          modelName={model!.name}
+          serverModelName={$serverModel}
+          serverStatus={$serverStatus}
+          loading={serverLoading}
           onclick={handlePlayStop}
-          disabled={serverLoading || isStarting}
-          aria-label={isActive ? 'Stop server' : 'Start server'}
-        >
-          {#if serverLoading || isStarting}
-            <Loader2 size={16} class="animate-spin" />
-          {:else if isActive}
-            <Square size={14} />
-          {:else}
-            <Play size={14} />
-          {/if}
-        </button>
+        />
       </div>
 
       <!-- Chips -->

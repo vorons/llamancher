@@ -1,6 +1,6 @@
 <script lang="ts">
   import { models, view, selectedModel, serverStatus, serverModel, settings } from '$lib/stores.svelte';
-  import { Play, Square, Loader2 } from '@lucide/svelte';
+  import ServerButton from '$lib/components/ServerButton.svelte';
   import { api } from '$lib/saucer';
   import { get } from 'svelte/store';
   import { toast } from 'svelte-sonner';
@@ -62,13 +62,7 @@
     view.set('detail');
   }
 
-  const isRunningModel = $derived(
-    (name: string) => $serverModel === name && $serverStatus === 'running'
-  );
 
-  const isStarting = $derived(
-    (name: string) => $serverModel === name && $serverStatus === 'starting'
-  );
 </script>
 
 <div class="flex-1 overflow-y-auto p-4">
@@ -100,24 +94,14 @@
             </div>
           </div>
 
-          <button
-            class={cn(
-              'flex items-center justify-center h-8 w-8 rounded-md transition-all active:scale-95 shrink-0 ml-3',
-              isRunningModel(model.name)
-                ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                : 'bg-secondary hover:bg-accent text-foreground',
-            )}
+          <ServerButton
+            modelName={model.name}
+            serverModelName={$serverModel}
+            serverStatus={$serverStatus}
+            loading={loading === model.name}
             onclick={(e) => handlePlayStop(e, model)}
-            disabled={loading === model.name || isStarting(model.name)}
-          >
-            {#if loading === model.name || isStarting(model.name)}
-              <Loader2 size={16} class="animate-spin" />
-            {:else if isRunningModel(model.name)}
-              <Square size={14} />
-            {:else}
-              <Play size={14} />
-            {/if}
-          </button>
+            class="ml-3"
+          />
         </div>
       {/each}
     </div>
