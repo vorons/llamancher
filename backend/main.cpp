@@ -124,10 +124,39 @@ int main(int argc, char* argv[]) {
       for (auto& m : models) {
         if (!Preset::exists(m.name)) {
           Preset p;
+          // Populate all metadata
           p.architecture = m.architecture;
           p.block_count = m.block_count;
           p.context_length = m.context_length;
           p.file_type = m.file_type;
+          p.display_name = m.display_name;
+          p.size_label = m.size_label;
+          p.license = m.license;
+          p.author = m.author;
+          p.version = m.version;
+          p.url = m.url;
+          p.source_url = m.source_url;
+          p.languages = m.languages;
+          p.vocab_size = m.vocab_size;
+          p.embedding_length = m.embedding_length;
+          p.feed_forward_length = m.feed_forward_length;
+          p.head_count = m.head_count;
+          p.head_count_kv = m.head_count_kv;
+          p.expert_count = m.expert_count;
+          p.expert_used_count = m.expert_used_count;
+          p.tokenizer_model = m.tokenizer_model;
+          p.bos_token_id = m.bos_token_id;
+          p.eos_token_id = m.eos_token_id;
+          p.chat_template = m.chat_template;
+          p.chat_templates = m.chat_templates;
+          p.has_vision = m.has_vision;
+          p.has_audio = m.has_audio;
+          // Override sampling defaults from GGUF recommendation
+          if (m.sample_temp > 0.001f)   p.temp = m.sample_temp;
+          if (m.sample_top_k > 0.001f)  p.top_k = static_cast<int>(m.sample_top_k);
+          if (m.sample_top_p > 0.001f)  p.top_p = m.sample_top_p;
+          if (m.sample_min_p > 0.001f)  p.min_p = m.sample_min_p;
+          if (m.sample_mirostat > 0.001f) p.mirostat = static_cast<int>(m.sample_mirostat);
           p.save(m.name);
         }
       }
@@ -144,6 +173,29 @@ int main(int argc, char* argv[]) {
           {"block_count",  std::to_string(m.block_count)},
           {"context_length", std::to_string(m.context_length)},
           {"file_type",    std::to_string(m.file_type)},
+          // Extended metadata
+          {"display_name",        m.display_name},
+          {"size_label",          m.size_label},
+          {"license",             m.license},
+          {"author",              m.author},
+          {"version",             m.version},
+          {"url",                 m.url},
+          {"source_url",          m.source_url},
+          {"languages",           m.languages},
+          {"vocab_size",          std::to_string(m.vocab_size)},
+          {"embedding_length",    std::to_string(m.embedding_length)},
+          {"feed_forward_length", std::to_string(m.feed_forward_length)},
+          {"head_count",          std::to_string(m.head_count)},
+          {"head_count_kv",       std::to_string(m.head_count_kv)},
+          {"expert_count",        std::to_string(m.expert_count)},
+          {"expert_used_count",   std::to_string(m.expert_used_count)},
+          {"tokenizer_model",     m.tokenizer_model},
+          {"bos_token_id",        std::to_string(m.bos_token_id)},
+          {"eos_token_id",        std::to_string(m.eos_token_id)},
+          {"chat_template",       m.chat_template},
+          {"chat_templates",      m.chat_templates},
+          {"has_vision",          m.has_vision ? "true" : "false"},
+          {"has_audio",           m.has_audio ? "true" : "false"},
         });
       }
       return result;
@@ -216,6 +268,29 @@ int main(int argc, char* argv[]) {
         {"spec_ngram_map_k4v_size_n",  std::to_string(p.spec_ngram_map_k4v_size_n)},
         {"spec_ngram_map_k4v_size_m",  std::to_string(p.spec_ngram_map_k4v_size_m)},
         {"spec_ngram_map_k4v_min_hits", std::to_string(p.spec_ngram_map_k4v_min_hits)},
+        // Extended metadata
+        {"display_name",        p.display_name},
+        {"size_label",          p.size_label},
+        {"license",             p.license},
+        {"author",              p.author},
+        {"version",             p.version},
+        {"url",                 p.url},
+        {"source_url",          p.source_url},
+        {"languages",           p.languages},
+        {"vocab_size",          std::to_string(p.vocab_size)},
+        {"embedding_length",    std::to_string(p.embedding_length)},
+        {"feed_forward_length", std::to_string(p.feed_forward_length)},
+        {"head_count",          std::to_string(p.head_count)},
+        {"head_count_kv",       std::to_string(p.head_count_kv)},
+        {"expert_count",        std::to_string(p.expert_count)},
+        {"expert_used_count",   std::to_string(p.expert_used_count)},
+        {"tokenizer_model",     p.tokenizer_model},
+        {"bos_token_id",        std::to_string(p.bos_token_id)},
+        {"eos_token_id",        std::to_string(p.eos_token_id)},
+        {"chat_template",       p.chat_template},
+        {"chat_templates",      p.chat_templates},
+        {"has_vision",          p.has_vision ? "true" : "false"},
+        {"has_audio",           p.has_audio ? "true" : "false"},
         // Auto-fit
         {"fit",            p.fit ? "true" : "false"},
         {"fit_target_mib", p.fit_target_mib},
@@ -228,6 +303,9 @@ int main(int argc, char* argv[]) {
       auto p = Preset::load(model_name);
       auto gi = [&](const std::string& k, int& v) {
         if (kv.contains(k)) v = std::stoi(kv.at(k));
+      };
+      auto gu = [&](const std::string& k, uint32_t& v) {
+        if (kv.contains(k)) v = static_cast<uint32_t>(std::stoul(kv.at(k)));
       };
       auto gf = [&](const std::string& k, float& v) {
         if (kv.contains(k)) v = std::stof(kv.at(k));
@@ -303,6 +381,30 @@ int main(int argc, char* argv[]) {
       gi("spec_ngram_map_k4v_size_n",   p.spec_ngram_map_k4v_size_n);
       gi("spec_ngram_map_k4v_size_m",   p.spec_ngram_map_k4v_size_m);
       gi("spec_ngram_map_k4v_min_hits", p.spec_ngram_map_k4v_min_hits);
+      // Extended metadata
+      gs("display_name",        p.display_name);
+      gs("size_label",          p.size_label);
+      gs("license",             p.license);
+      gs("author",              p.author);
+      gs("version",             p.version);
+      gs("url",                 p.url);
+      gs("source_url",          p.source_url);
+      gs("languages",           p.languages);
+      gu("vocab_size",          p.vocab_size);
+      gu("embedding_length",    p.embedding_length);
+      gu("feed_forward_length", p.feed_forward_length);
+      gu("head_count",          p.head_count);
+      gu("head_count_kv",       p.head_count_kv);
+      gu("expert_count",        p.expert_count);
+      gu("expert_used_count",   p.expert_used_count);
+      gs("tokenizer_model",     p.tokenizer_model);
+      // int32_t fields — use explicit cast since gi expects int&
+      { if (kv.contains("bos_token_id")) p.bos_token_id = static_cast<int32_t>(std::stoi(kv.at("bos_token_id"))); }
+      { if (kv.contains("eos_token_id")) p.eos_token_id = static_cast<int32_t>(std::stoi(kv.at("eos_token_id"))); }
+      gs("chat_template",       p.chat_template);
+      gs("chat_templates",      p.chat_templates);
+      gb("has_vision",          p.has_vision);
+      gb("has_audio",           p.has_audio);
       // Auto-fit
       gb("fit",            p.fit);
       gs("fit_target_mib", p.fit_target_mib);
