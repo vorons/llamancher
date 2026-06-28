@@ -79,11 +79,11 @@
 <div class="flex flex-col h-screen bg-background">
   <HeaderBar />
   {#if $view === 'detail'}
-    <div in:fade={{ duration: 120 }}>
+    <div in:fade={{ duration: 120 }} class="flex-1 flex flex-col min-h-0">
       <ModelDetail />
     </div>
   {:else}
-    <div in:fade={{ duration: 120 }}>
+    <div in:fade={{ duration: 120 }} class="flex-1 flex flex-col min-h-0">
       <ModelList />
     </div>
   {/if}
