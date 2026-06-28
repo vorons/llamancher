@@ -115,7 +115,8 @@
   {warningIcon}
   {successIcon}
   toastOptions={{
-    class: 'text-sm [&>div]:gap-2',
+    unstyled: true,
+    class: 'text-sm flex items-start gap-2.5 rounded-lg border p-3 shadow-lg',
     classes: {
       error: 'bg-red-950 border-red-800 text-red-300',
       info: 'bg-blue-950 border-blue-800 text-blue-300',
