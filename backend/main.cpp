@@ -128,6 +128,10 @@ int main(int argc, char* argv[]) {
         {"device",       p.device},
         {"mlock",        p.mlock ? "true" : "false"},
         {"no_mmap",      p.no_mmap ? "true" : "false"},
+        {"jinja",        p.jinja ? "true" : "false"},
+        {"grammar",      p.grammar},
+        {"grammar_file", p.grammar_file},
+        {"json_schema",  p.json_schema},
         // Context & Cache
         {"batch_size",   std::to_string(p.batch_size)},
         {"ubatch_size",  std::to_string(p.ubatch_size)},
@@ -163,6 +167,19 @@ int main(int argc, char* argv[]) {
         {"threads_draft",         std::to_string(p.threads_draft)},
         {"threads_batch_draft",   std::to_string(p.threads_batch_draft)},
         {"spec_draft_poll",       p.spec_draft_poll ? "true" : "false"},
+        // N-gram params
+        {"spec_ngram_mod_n_min",      std::to_string(p.spec_ngram_mod_n_min)},
+        {"spec_ngram_mod_n_max",      std::to_string(p.spec_ngram_mod_n_max)},
+        {"spec_ngram_mod_n_match",    std::to_string(p.spec_ngram_mod_n_match)},
+        {"spec_ngram_simple_size_n",  std::to_string(p.spec_ngram_simple_size_n)},
+        {"spec_ngram_simple_size_m",  std::to_string(p.spec_ngram_simple_size_m)},
+        {"spec_ngram_simple_min_hits", std::to_string(p.spec_ngram_simple_min_hits)},
+        {"spec_ngram_map_k_size_n",   std::to_string(p.spec_ngram_map_k_size_n)},
+        {"spec_ngram_map_k_size_m",   std::to_string(p.spec_ngram_map_k_size_m)},
+        {"spec_ngram_map_k_min_hits", std::to_string(p.spec_ngram_map_k_min_hits)},
+        {"spec_ngram_map_k4v_size_n",  std::to_string(p.spec_ngram_map_k4v_size_n)},
+        {"spec_ngram_map_k4v_size_m",  std::to_string(p.spec_ngram_map_k4v_size_m)},
+        {"spec_ngram_map_k4v_min_hits", std::to_string(p.spec_ngram_map_k4v_min_hits)},
         // Auto-fit
         {"fit",            p.fit ? "true" : "false"},
         {"fit_target_mib", p.fit_target_mib},
@@ -198,6 +215,10 @@ int main(int argc, char* argv[]) {
       gs("device",       p.device);
       gb("mlock",        p.mlock);
       gb("no_mmap",      p.no_mmap);
+      gb("jinja",        p.jinja);
+      gs("grammar",      p.grammar);
+      gs("grammar_file", p.grammar_file);
+      gs("json_schema",  p.json_schema);
       // Context & Cache
       gi("batch_size",   p.batch_size);
       gi("ubatch_size",  p.ubatch_size);
@@ -233,6 +254,19 @@ int main(int argc, char* argv[]) {
       gi("threads_draft",         p.threads_draft);
       gi("threads_batch_draft",   p.threads_batch_draft);
       gb("spec_draft_poll",       p.spec_draft_poll);
+      // N-gram
+      gi("spec_ngram_mod_n_min",       p.spec_ngram_mod_n_min);
+      gi("spec_ngram_mod_n_max",       p.spec_ngram_mod_n_max);
+      gi("spec_ngram_mod_n_match",     p.spec_ngram_mod_n_match);
+      gi("spec_ngram_simple_size_n",   p.spec_ngram_simple_size_n);
+      gi("spec_ngram_simple_size_m",   p.spec_ngram_simple_size_m);
+      gi("spec_ngram_simple_min_hits", p.spec_ngram_simple_min_hits);
+      gi("spec_ngram_map_k_size_n",    p.spec_ngram_map_k_size_n);
+      gi("spec_ngram_map_k_size_m",    p.spec_ngram_map_k_size_m);
+      gi("spec_ngram_map_k_min_hits",  p.spec_ngram_map_k_min_hits);
+      gi("spec_ngram_map_k4v_size_n",   p.spec_ngram_map_k4v_size_n);
+      gi("spec_ngram_map_k4v_size_m",   p.spec_ngram_map_k4v_size_m);
+      gi("spec_ngram_map_k4v_min_hits", p.spec_ngram_map_k4v_min_hits);
       // Auto-fit
       gb("fit",            p.fit);
       gs("fit_target_mib", p.fit_target_mib);
