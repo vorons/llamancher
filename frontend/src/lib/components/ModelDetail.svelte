@@ -1,10 +1,11 @@
 <script lang="ts">
   import { selectedModel, serverStatus, serverModel, settings } from '$lib/stores.svelte';
   import ServerButton from '$lib/components/ServerButton.svelte';
-  import { Loader2 } from '@lucide/svelte';
+  import { Loader2, Terminal, FileText, FileJson, Eye } from '@lucide/svelte';
   import { api } from '$lib/saucer';
   import { toast } from 'svelte-sonner';
   import { get } from 'svelte/store';
+  import LogViewer from './LogViewer.svelte';
 
   import { Separator } from '$lib/ui/separator';
   import { Label } from '$lib/ui/label';
@@ -79,6 +80,39 @@
   let loadingPreset = $state(true);
   let serverLoading = $state(false);
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
+  let logOpen = $state(false);
+
+  // Popover editors
+  let popoverField = $state<string | null>(null); // 'grammar' | 'json_schema' | 'chat_template'
+  let popoverValue = $state('');
+  let popoverPos = $state<{ top: number; left: number } | null>(null);
+
+  function openPopover(field: string, value: string, el: HTMLElement) {
+    popoverField = field;
+    popoverValue = value;
+    const rect = el.getBoundingClientRect();
+    const pw = 320; // w-80 ≈ 20rem
+    let left = rect.right - pw;
+    left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+    popoverPos = { top: rect.bottom + 4, left };
+  }
+
+  function closePopover() {
+    popoverField = null;
+    popoverPos = null;
+  }
+
+  function savePopover() {
+    if (!popoverField || !model) return;
+    if (popoverField === 'grammar') preset.grammar = popoverValue;
+    else if (popoverField === 'json_schema') preset.json_schema = popoverValue;
+    else if (popoverField === 'chat_template') {
+      // Store chat_template override — will be saved to preset
+      preset.chat_template = popoverValue;
+    }
+    closePopover();
+    debouncedSave();
+  }
 
   const model = $derived($selectedModel);
 
@@ -326,13 +360,22 @@
             {model.quantization} · {model.size}
           </div>
         </div>
-        <ServerButton
-          modelName={modelDisplayName(model)}
-          serverModelName={$serverModel}
-          serverStatus={$serverStatus}
-          loading={serverLoading}
-          onclick={handlePlayStop}
-        />
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            class="flex items-center justify-center h-8 w-8 rounded-md border border-border bg-secondary hover:bg-accent text-muted-foreground hover:text-foreground transition-all active:scale-95"
+            onclick={() => logOpen = true}
+            title="Server logs"
+          >
+            <Terminal size={14} />
+          </button>
+          <ServerButton
+            modelName={modelDisplayName(model)}
+            serverModelName={$serverModel}
+            serverStatus={$serverStatus}
+            loading={serverLoading}
+            onclick={handlePlayStop}
+          />
+        </div>
       </div>
 
       <!-- Chips -->
@@ -460,14 +503,45 @@
           <Switch checked={preset.jinja} onCheckedChange={(c) => { preset.jinja = c; debouncedSave(); }} />
         </div>
 
+        {#if preset.jinja}
+        <div class="flex items-center justify-between gap-4 py-1.5">
+          <div class="min-w-0">
+            <Label for="chat_template" class="text-sm">Chat Template</Label>
+            <p class="text-[11px] leading-tight text-muted-foreground">Jinja chat template for formatting messages</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-muted-foreground truncate max-w-40">
+              {model?.chat_template
+                ? (model.chat_template.length > 40 ? model.chat_template.slice(0, 40) + '…' : model.chat_template)
+                : '—'}
+            </span>
+            <button
+              class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all"
+              onclick={(e) => openPopover('chat_template', model?.chat_template || '', e.currentTarget)}
+              title="Edit chat template"
+            >
+              <Eye size={14} />
+            </button>
+          </div>
+        </div>
+        {/if}
+
         {#if !preset.jinja}
         <div class="flex items-center justify-between gap-4 py-1.5">
           <div class="min-w-0">
             <Label for="grammar" class="text-sm">Grammar</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">BNF-like grammar constraint</p>
           </div>
-          <Input id="grammar" placeholder="root ::= ..." class="w-36" value={preset.grammar}
-            oninput={(e) => { preset.grammar = e.currentTarget.value; debouncedSave(); }} />
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-muted-foreground truncate max-w-32">{preset.grammar ? (preset.grammar.length > 30 ? preset.grammar.slice(0, 30) + '…' : preset.grammar) : '—'}</span>
+            <button
+              class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all"
+              onclick={(e) => openPopover('grammar', preset.grammar, e.currentTarget)}
+              title="Edit grammar"
+            >
+              <FileText size={14} />
+            </button>
+          </div>
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
@@ -475,8 +549,23 @@
             <Label for="grammar_file" class="text-sm">Grammar File</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">Path to grammar file</p>
           </div>
-          <Input id="grammar_file" placeholder="/path/to/grammar.gbnf" class="w-36" value={preset.grammar_file}
-            oninput={(e) => { preset.grammar_file = e.currentTarget.value; debouncedSave(); }} />
+          <div class="flex items-center gap-2">
+            <Input id="grammar_file" placeholder="/path/to/grammar.gbnf" class="w-28" value={preset.grammar_file}
+              oninput={(e) => { preset.grammar_file = e.currentTarget.value; debouncedSave(); }} />
+            <button
+              class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+              onclick={async () => {
+                const path = await api.pickGrammarFile();
+                if (path) {
+                  preset.grammar_file = path;
+                  debouncedSave();
+                }
+              }}
+              title="Browse for grammar file"
+            >
+              Browse
+            </button>
+          </div>
         </div>
 
         <div class="flex items-center justify-between gap-4 py-1.5">
@@ -484,8 +573,16 @@
             <Label for="json_schema" class="text-sm">JSON Schema</Label>
             <p class="text-[11px] leading-tight text-muted-foreground">JSON schema to constrain generations</p>
           </div>
-          <Input id="json_schema" placeholder={'{}'} class="w-36" value={preset.json_schema}
-            oninput={(e) => { preset.json_schema = e.currentTarget.value; debouncedSave(); }} />
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-muted-foreground truncate max-w-32">{preset.json_schema ? (preset.json_schema.length > 30 ? preset.json_schema.slice(0, 30) + '…' : preset.json_schema) : '—'}</span>
+            <button
+              class="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-all"
+              onclick={(e) => openPopover('json_schema', preset.json_schema, e.currentTarget)}
+              title="Edit JSON schema"
+            >
+              <FileJson size={14} />
+            </button>
+          </div>
         </div>
         {/if}
       </div>
@@ -859,3 +956,48 @@
     {/if}
   </div>
 {/if}
+
+<!-- Popover editor -->
+{#if popoverField && popoverPos}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="fixed inset-0 z-50" onclick={closePopover} role="presentation"></div>
+  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+  <div
+    class="fixed z-50 w-80 rounded-lg border border-border bg-popover shadow-xl"
+    style="top: {popoverPos.top}px; left: {popoverPos.left}px;"
+    onclick={(e) => e.stopPropagation()}
+    role="dialog"
+    aria-label="Editor"
+    tabindex="-1"
+  >
+    <div class="px-3 py-2 border-b border-border">
+      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {popoverField === 'chat_template' ? 'Chat Template' : popoverField === 'grammar' ? 'Grammar (BNF)' : 'JSON Schema'}
+      </span>
+    </div>
+    <div class="p-2">
+      <textarea
+        class="w-full h-40 rounded-md border border-border bg-background p-2 text-xs font-mono resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+        bind:value={popoverValue}
+        placeholder={popoverField === 'chat_template' ? 'Jinja chat template…' : popoverField === 'grammar' ? 'root ::= ...' : '{ }'}
+      ></textarea>
+    </div>
+    <div class="flex items-center justify-end gap-2 px-3 py-2 border-t border-border">
+      <button
+        class="px-3 py-1 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        onclick={closePopover}
+      >
+        Cancel
+      </button>
+      <button
+        class="px-3 py-1 rounded-md text-xs bg-primary text-primary-foreground hover:bg-primary/80 transition-colors"
+        onclick={savePopover}
+      >
+        Save
+      </button>
+    </div>
+  </div>
+{/if}
+
+<!-- Log viewer -->
+<LogViewer open={logOpen} onclose={() => logOpen = false} />

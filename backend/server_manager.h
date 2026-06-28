@@ -30,6 +30,7 @@ public:
   int           port() const;
 
   void set_observer(ServerObserver* obs) { observer_ = obs; }
+  std::string log_path() const { return log_path_; }
 
 private:
   void health_loop();
@@ -40,6 +41,7 @@ private:
   std::string server_path_;
   std::vector<std::string> args_;
   int port_ = 8080;
+  std::string log_path_;
   pid_t pid_ = 0;
   std::unique_ptr<std::thread> health_thread_;
   std::atomic<bool> running_{false};

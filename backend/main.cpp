@@ -1,3 +1,4 @@
+#include <gtk/gtk.h>
 #include <saucer/smartview.hpp>
 #include <saucer/embedded/all.hpp>
 
@@ -14,6 +15,8 @@
 #include <format>
 #include <array>
 #include <cstdio>
+#include <fstream>
+#include <deque>
 
 // Observer that bridges server status → JS via saucer execute
 class StatusBridge : public ServerObserver {
@@ -66,30 +69,50 @@ int main(int argc, char* argv[]) {
 
     // ── Exposed API ────────────────────────────────────────────────
 
-    // ── File pickers (native dialogs) ────────────────────────────────
+    // ── File pickers (native dialogs, non-blocking) ─────────────────
 
-    // ponytail: popen+zenity blocks the webview event loop during the dialog.
-    // Upgrade to gtk_file_chooser_native_new for non-blocking UX
-    // when GTK headers are accessible from this target.
-    auto exec_cmd = [](const std::string& cmd) -> std::string {
-      std::array<char, 4096> buf{};
-      std::string result;
-      auto* pipe = popen(cmd.c_str(), "r");
-      if (!pipe) return {};
-      while (fgets(buf.data(), static_cast<int>(buf.size()), pipe))
-        result += buf.data();
-      auto rc = pclose(pipe);
-      if (rc != 0) return {};
-      if (!result.empty() && result.back() == '\n') result.pop_back();
-      return result;
+    auto show_file_chooser = [](GtkWindow* parent, const char* title,
+                                 GtkFileChooserAction action,
+                                 saucer::executor<std::string> exec,
+                                 GtkFileFilter* filter = nullptr) {
+      auto* native = gtk_file_chooser_native_new(title, parent, action, "_Open", "_Cancel");
+      if (filter) gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(native), filter);
+
+      auto* exec_ptr = new saucer::executor<std::string>(std::move(exec));
+      g_signal_connect_data(GTK_NATIVE_DIALOG(native), "response", G_CALLBACK(+[](
+        GtkNativeDialog* dialog, int response, gpointer data) {
+          auto& exec = *static_cast<saucer::executor<std::string>*>(data);
+          if (response == GTK_RESPONSE_ACCEPT) {
+            GFile* file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+            if (file) {
+              char* path = g_file_get_path(file);
+              exec.resolve(path ? std::string(path) : std::string{});
+              g_free(path);
+              g_object_unref(file);
+            } else {
+              exec.resolve(std::string{});
+            }
+          } else {
+            exec.resolve(std::string{});
+          }
+      }), exec_ptr, +[](gpointer data, GClosure*) {
+        delete static_cast<saucer::executor<std::string>*>(data);
+      }, GConnectFlags(0));
+
+      gtk_native_dialog_show(GTK_NATIVE_DIALOG(native));
+      g_object_unref(native);
     };
 
-    webview->expose("pick_file", [exec_cmd]() {
-      return exec_cmd("zenity --file-selection --title='Select llama-server executable' 2>/dev/null");
+    // ponytail: no parent window (nullptr) avoids GTK header dependency in this TU.
+    // The dialog still works — it just won't be strictly modal to the app window.
+    webview->expose("pick_file", [show_file_chooser](saucer::executor<std::string> exec) {
+      show_file_chooser(nullptr, "Select llama-server executable",
+                        GTK_FILE_CHOOSER_ACTION_OPEN, std::move(exec));
     });
 
-    webview->expose("pick_folder", [exec_cmd]() {
-      return exec_cmd("zenity --file-selection --directory --title='Select models directory' 2>/dev/null");
+    webview->expose("pick_folder", [show_file_chooser](saucer::executor<std::string> exec) {
+      show_file_chooser(nullptr, "Select models directory",
+                        GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, std::move(exec));
     });
 
     webview->expose("set_window_title", [window](const std::string& title) {
@@ -104,6 +127,9 @@ int main(int argc, char* argv[]) {
         {"models_dir",        settings->models_dir},
         {"auto_start_server", settings->auto_start_server ? "true" : "false"},
         {"theme",             settings->theme},
+        {"port",              std::to_string(settings->port)},
+        {"api_key",           settings->api_key},
+        {"last_model",        settings->last_model},
       };
     });
 
@@ -113,6 +139,9 @@ int main(int argc, char* argv[]) {
       else if (key == "models_dir")   settings->models_dir = value;
       else if (key == "auto_start_server") settings->auto_start_server = (value == "true");
       else if (key == "theme")        settings->theme = value;
+      else if (key == "port")         try { settings->port = std::stoi(value); } catch (...) {}
+      else if (key == "api_key")      settings->api_key = value;
+      else if (key == "last_model")   settings->last_model = value;
       settings->save();
     });
 
@@ -302,13 +331,16 @@ int main(int argc, char* argv[]) {
                                        const std::map<std::string, std::string>& kv) {
       auto p = Preset::load(model_name);
       auto gi = [&](const std::string& k, int& v) {
-        if (kv.contains(k)) v = std::stoi(kv.at(k));
+        if (!kv.contains(k)) return;
+        try { v = std::stoi(kv.at(k)); } catch (...) {}
       };
       auto gu = [&](const std::string& k, uint32_t& v) {
-        if (kv.contains(k)) v = static_cast<uint32_t>(std::stoul(kv.at(k)));
+        if (!kv.contains(k)) return;
+        try { v = static_cast<uint32_t>(std::stoul(kv.at(k))); } catch (...) {}
       };
       auto gf = [&](const std::string& k, float& v) {
-        if (kv.contains(k)) v = std::stof(kv.at(k));
+        if (!kv.contains(k)) return;
+        try { v = std::stof(kv.at(k)); } catch (...) {}
       };
       auto gs = [&](const std::string& k, std::string& v) {
         if (kv.contains(k)) v = kv.at(k);
@@ -399,8 +431,8 @@ int main(int argc, char* argv[]) {
       gu("expert_used_count",   p.expert_used_count);
       gs("tokenizer_model",     p.tokenizer_model);
       // int32_t fields — use explicit cast since gi expects int&
-      { if (kv.contains("bos_token_id")) p.bos_token_id = static_cast<int32_t>(std::stoi(kv.at("bos_token_id"))); }
-      { if (kv.contains("eos_token_id")) p.eos_token_id = static_cast<int32_t>(std::stoi(kv.at("eos_token_id"))); }
+      { if (kv.contains("bos_token_id")) try { p.bos_token_id = static_cast<int32_t>(std::stoi(kv.at("bos_token_id"))); } catch (...) {} }
+      { if (kv.contains("eos_token_id")) try { p.eos_token_id = static_cast<int32_t>(std::stoi(kv.at("eos_token_id"))); } catch (...) {} }
       gs("chat_template",       p.chat_template);
       gs("chat_templates",      p.chat_templates);
       gb("has_vision",          p.has_vision);
@@ -436,17 +468,56 @@ int main(int argc, char* argv[]) {
       }
       auto preset = Preset::load(model_name);
       auto args = preset.cli_args(model_path);
-      args.insert(args.end(), {"--host", "127.0.0.1", "--port", "8080"});
+      args.insert(args.end(), {"--host", "127.0.0.1"});
+      args.push_back("--port");
+      args.push_back(std::to_string(settings->port));
+      if (!settings->api_key.empty()) {
+        args.push_back("--api-key");
+        args.push_back(settings->api_key);
+      }
       server_mgr->start(settings->llama_server_path, args);
       // Use display_name from preset for the title, fallback to filename stem
       if (!preset.display_name.empty()) {
         server_mgr->set_current_model(preset.display_name);
       }
+      // Remember last started model for auto-start
+      settings->last_model = model_name;
+      settings->save();
       return std::string("ok");
     });
 
     webview->expose("stop_server", [server_mgr]() {
       server_mgr->stop();
+    });
+
+    // ── Server logs ────────────────────────────────────────────────
+
+    webview->expose("get_server_log_path", [server_mgr]() {
+      return server_mgr->log_path();
+    });
+
+    webview->expose("read_log", [](const std::string& path, int max_lines) {
+      std::ifstream f(path);
+      if (!f) return std::vector<std::string>{};
+      std::deque<std::string> queue;
+      std::string line;
+      while (std::getline(f, line)) {
+        queue.push_back(line);
+        if (static_cast<int>(queue.size()) > max_lines)
+          queue.pop_front();
+      }
+      return std::vector<std::string>(queue.begin(), queue.end());
+    });
+
+    // ── Grammar file picker ────────────────────────────────────────
+
+    webview->expose("pick_grammar_file", [show_file_chooser](saucer::executor<std::string> exec) {
+      auto* filter = gtk_file_filter_new();
+      gtk_file_filter_set_name(filter, "Grammar files");
+      gtk_file_filter_add_pattern(filter, "*.gbnf");
+      gtk_file_filter_add_pattern(filter, "*.txt");
+      show_file_chooser(nullptr, "Select grammar file",
+                        GTK_FILE_CHOOSER_ACTION_OPEN, std::move(exec), filter);
     });
 
     // ── Load frontend ──────────────────────────────────────────────

@@ -56,6 +56,16 @@ void ServerManager::start(const std::string& server_path,
     }
   }
 
+  // Create log file path
+  {
+    auto home = getenv("HOME");
+    auto log_dir = fs::path(home ? home : "/tmp") / ".llamancher" / "logs";
+    fs::create_directories(log_dir);
+    auto ts = std::chrono::duration_cast<std::chrono::seconds>(
+      std::chrono::system_clock::now().time_since_epoch()).count();
+    log_path_ = (log_dir / std::format("server-{}.log", ts)).string();
+  }
+
   pid_ = fork();
   if (pid_ == 0) {
     std::vector<const char*> argv;
@@ -63,11 +73,12 @@ void ServerManager::start(const std::string& server_path,
     for (auto& a : args) argv.push_back(a.c_str());
     argv.push_back(nullptr);
 
-    int devnull = open("/dev/null", O_WRONLY);
-    if (devnull >= 0) {
-      dup2(devnull, STDOUT_FILENO);
-      dup2(devnull, STDERR_FILENO);
-      close(devnull);
+    // Redirect stdout+stderr to log file
+    int log_fd = open(log_path_.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (log_fd >= 0) {
+      dup2(log_fd, STDOUT_FILENO);
+      dup2(log_fd, STDERR_FILENO);
+      close(log_fd);
     }
 
     execvp(server_path.c_str(), const_cast<char* const*>(argv.data()));
@@ -106,6 +117,7 @@ void ServerManager::stop() {
 
   status_.store(ServerStatus::Stopped);
   current_model_.clear();
+  log_path_.clear();
   notify(ServerStatus::Stopped);
 }
 

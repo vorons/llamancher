@@ -117,6 +117,9 @@ export interface Settings {
   models_dir: string;
   auto_start_server: boolean;
   theme: 'dark' | 'light';
+  port: number;
+  api_key: string;
+  last_model: string;
 }
 
 export type ServerStatus = 'stopped' | 'starting' | 'running' | 'error';

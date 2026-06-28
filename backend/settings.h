@@ -8,6 +8,9 @@ struct Settings {
   std::string models_dir;
   bool auto_start_server = false;
   std::string theme = "dark"; // "dark" | "light"
+  int port = 8080;
+  std::string api_key;
+  std::string last_model;
 
   Settings();
 
@@ -26,6 +29,9 @@ struct glz::meta<Settings> {
     "llama_server_path", &T::llama_server_path,
     "models_dir",        &T::models_dir,
     "auto_start_server", &T::auto_start_server,
-    "theme",              &T::theme
+    "theme",              &T::theme,
+    "port",               &T::port,
+    "api_key",            &T::api_key,
+    "last_model",         &T::last_model
   );
 };

@@ -55,6 +55,15 @@ export const api = {
   get stopServer() {
     return getApi<void>('stop_server');
   },
+  get getServerLogPath() {
+    return getApi<string>('get_server_log_path');
+  },
+  get readLog() {
+    return getApi<string[]>('read_log');
+  },
+  get pickGrammarFile() {
+    return getApi<string>('pick_grammar_file');
+  },
   get setWindowTitle() {
     return getApi<void>('set_window_title');
   },

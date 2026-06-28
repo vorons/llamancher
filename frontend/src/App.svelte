@@ -9,7 +9,7 @@
   import ModelList from '$lib/components/ModelList.svelte';
   import ModelDetail from '$lib/components/ModelDetail.svelte';
   import SettingsDialog from '$lib/components/SettingsDialog.svelte';
-  import type { ModelInfo } from '$lib/types';
+  import type { ModelInfo, Settings } from '$lib/types';
 
   function applyTheme(t: string) {
     document.documentElement.dataset.theme = t === 'light' ? 'light' : 'dark';
@@ -18,15 +18,42 @@
   // React to theme changes
   settings.subscribe((s) => applyTheme(s.theme));
 
+  // Prevent double auto-start
+  let autoStartDone = false;
+
   onMount(() => {
     // Load settings
     api.settings().then((kv) => {
-      settings.set({
+      const s: Settings = {
         llama_server_path: kv.llama_server_path,
         models_dir: kv.models_dir,
         auto_start_server: kv.auto_start_server === 'true',
         theme: kv.theme === 'light' ? 'light' : 'dark',
-      });
+        port: parseInt(kv.port) || 8080,
+        api_key: kv.api_key || '',
+        last_model: kv.last_model || '',
+      };
+      settings.set(s);
+
+      // Auto-start server on boot
+      if (s.auto_start_server && s.last_model && !autoStartDone) {
+        autoStartDone = true;
+        // Wait for initial scan, then start
+        const unsub = models.subscribe((m) => {
+          if (m.length > 0) {
+            unsub();
+            const target = m.find((x) => x.name === s.last_model);
+            if (target) {
+              api.startServer(target.name, target.path).then((r) => {
+                if (r === 'ok') {
+                  serverStatus.set('starting');
+                  serverModel.set(target.display_name || target.name);
+                }
+              }).catch(() => {});
+            }
+          }
+        });
+      }
     }).catch(() => {
       // Running outside saucer — use defaults
     });

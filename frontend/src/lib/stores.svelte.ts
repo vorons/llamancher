@@ -10,6 +10,9 @@ export const settings = writable<Settings>({
   models_dir: '',
   auto_start_server: false,
   theme: 'dark',
+  port: 8080,
+  api_key: '',
+  last_model: '',
 });
 export const settingsOpen = writable(false);
 
