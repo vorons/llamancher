@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { Toaster, toast } from 'svelte-sonner';
-  import { CircleAlert, Info, TriangleAlert, Check } from '@lucide/svelte';
+  import { toast } from 'svelte-sonner';
+  import Toaster from '$lib/ui/sonner/sonner.svelte';
   import { models, serverStatus, serverModel, settings, view, scanning } from '$lib/stores.svelte';
   import { api, onServerStatus } from '$lib/saucer';
   import HeaderBar from '$lib/components/HeaderBar.svelte';
@@ -92,37 +92,4 @@
 
 <SettingsDialog />
 
-{#snippet errorIcon()}
-  <CircleAlert size={16} class="text-red-400 shrink-0" />
-{/snippet}
-
-{#snippet infoIcon()}
-  <Info size={16} class="text-blue-400 shrink-0" />
-{/snippet}
-
-{#snippet warningIcon()}
-  <TriangleAlert size={16} class="text-amber-400 shrink-0" />
-{/snippet}
-
-{#snippet successIcon()}
-  <Check size={16} class="text-green-400 shrink-0" />
-{/snippet}
-
-<Toaster
-  position="bottom-right"
-  {errorIcon}
-  {infoIcon}
-  {warningIcon}
-  {successIcon}
-  toastOptions={{
-    unstyled: true,
-    class: 'text-sm flex items-start gap-2.5 rounded-lg border p-3 shadow-lg',
-    classes: {
-      error: 'bg-red-950 border-red-800 text-red-300',
-      info: 'bg-blue-950 border-blue-800 text-blue-300',
-      warning: 'bg-amber-950 border-amber-800 text-amber-300',
-      success: 'bg-green-950 border-green-800 text-green-300',
-    },
-    actionButtonStyle: 'display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;height:32px;padding:0 12px;border-radius:6px;font-size:13px;font-weight:500;background:hsl(0 0% 25%);color:hsl(0 0% 93%);border:none;cursor:pointer;transition:background 0.15s',
-  }}
-/>
+<Toaster position="bottom-right" />
