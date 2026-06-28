@@ -126,11 +126,17 @@ void ModelManager::read_gguf_metadata(const fs::path& path, ModelInfo& info) con
 
   if (tensor_count > 1'000'000 || metadata_kv_count > 100'000) return;
 
-  static constexpr uint64_t MAX_HEADER = 256 * 1024;
-  uint64_t header_size = metadata_kv_count * 256;
-  if (header_size > MAX_HEADER) header_size = MAX_HEADER;
+  // Get remaining file size after the 24-byte GGUF header
+  auto header_pos = f.tellg();
+  f.seekg(0, std::ios::end);
+  auto file_size = f.tellg();
+  f.seekg(header_pos);
 
-  std::vector<char> buf(header_size);
+  uint64_t remaining = static_cast<uint64_t>(file_size - header_pos);
+  static constexpr uint64_t MAX_METADATA = 10 * 1024 * 1024; // 10 MiB — far beyond any real GGUF metadata
+  uint64_t to_read = std::min(remaining, MAX_METADATA);
+
+  std::vector<char> buf(to_read);
   f.read(buf.data(), buf.size());
   uint64_t bytes_read = f.gcount();
   if (bytes_read == 0) return;
