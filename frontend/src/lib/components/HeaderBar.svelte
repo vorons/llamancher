@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { ModelInfo } from '$lib/types';
   import { view, selectedModel, serverStatus, serverModel, settingsOpen, scanning } from '$lib/stores.svelte';
   import { ArrowLeft, RefreshCw, Settings, Minus, Square, X } from '@lucide/svelte';
   import { cn } from '$lib/utils';
@@ -22,11 +23,15 @@
     }
   });
 
+  function modelDisplayName(m: ModelInfo | null): string {
+    return m?.display_name && m.display_name.trim() !== '' ? m.display_name : m?.name ?? '';
+  }
+
   const headerTitle = $derived(
     $serverStatus === 'running' && $serverModel
-      ? `${$serverModel} — llamancher`
+      ? $serverModel
       : $view === 'detail' && $selectedModel
-        ? $selectedModel.name
+        ? modelDisplayName($selectedModel)
         : 'llamancher'
   );
 
