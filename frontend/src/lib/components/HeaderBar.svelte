@@ -39,7 +39,7 @@
 
 <header
   data-webview-drag
-  class="flex items-center h-11 px-3 gap-2 bg-background border-b border-border shrink-0"
+  class="flex items-center h-11 px-3 gap-2 bg-muted border-b border-border shrink-0"
 >
   <!-- Left section -->
   <div class="flex items-center gap-2" data-webview-ignore>
