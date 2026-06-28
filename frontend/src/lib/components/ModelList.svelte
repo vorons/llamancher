@@ -65,6 +65,10 @@
   const isRunningModel = $derived(
     (name: string) => $serverModel === name && $serverStatus === 'running'
   );
+
+  const isStarting = $derived(
+    (name: string) => $serverModel === name && $serverStatus === 'starting'
+  );
 </script>
 
 <div class="flex-1 overflow-y-auto p-4">
@@ -104,9 +108,9 @@
                 : 'bg-secondary hover:bg-accent text-foreground',
             )}
             onclick={(e) => handlePlayStop(e, model)}
-            disabled={loading === model.name}
+            disabled={loading === model.name || isStarting(model.name)}
           >
-            {#if loading === model.name}
+            {#if loading === model.name || isStarting(model.name)}
               <Loader2 size={16} class="animate-spin" />
             {:else if isRunningModel(model.name)}
               <Square size={14} />
