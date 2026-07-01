@@ -58,7 +58,7 @@
     </Dialog.Header>
     <div class="space-y-4">
       <div class="space-y-1">
-        <Label for="llama_server_path">llama-server path</Label>
+        <Label for="llama_server_path">{$t('settings.llamaPath')}</Label>
         <div class="flex gap-2">
           <Input
             id="llama_server_path"
@@ -89,7 +89,7 @@
       </div>
 
       <div class="space-y-1">
-        <Label for="models_dir">Models directory</Label>
+        <Label for="models_dir">{$t('settings.modelsDir')}</Label>
         <div class="flex gap-2">
           <Input
             id="models_dir"
@@ -123,9 +123,9 @@
 
       <div class="flex items-center justify-between">
         <div>
-          <Label for="port">Server port</Label>
+          <Label for="port">{$t('settings.port')}</Label>
           <p class="text-xs text-muted-foreground">
-            Port for llama-server (default 8080)
+            {$t('settings.port.desc')}
           </p>
         </div>
         <Input
@@ -143,7 +143,7 @@
       </div>
 
       <div class="space-y-1">
-        <Label for="api_key">API key</Label>
+        <Label for="api_key">{$t('settings.apiKey')}</Label>
         <Input
           id="api_key"
           type="password"
@@ -156,7 +156,7 @@
           class="w-full"
         />
         <p class="text-xs text-muted-foreground mt-1">
-          Optional API key for securing the server (--api-key)
+          {$t('settings.apiKey.desc')}
         </p>
       </div>
 
@@ -164,9 +164,9 @@
 
       <div class="flex items-center justify-between">
         <div>
-          <Label for="auto_start">Auto-start server</Label>
+          <Label for="auto_start">{$t('settings.autoStart')}</Label>
           <p class="text-xs text-muted-foreground">
-            Start last used model automatically when the app launches
+            {$t('settings.autoStart.desc')}
           </p>
         </div>
         <Switch
@@ -183,9 +183,9 @@
 
       <div class="flex items-center justify-between">
         <div>
-          <Label for="theme">Light theme</Label>
+          <Label for="theme">{$t('settings.theme')}</Label>
           <p class="text-xs text-muted-foreground">
-            Switch between dark and light appearance
+            {$t('settings.theme.desc')}
           </p>
         </div>
         <Switch

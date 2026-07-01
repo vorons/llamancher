@@ -17,6 +17,15 @@
     view.set('list');
   }
 
+  const statusLabel = $derived.by(() => {
+    switch ($serverStatus) {
+      case 'running': return $t('header.running');
+      case 'starting': return $t('header.starting');
+      case 'error': return $t('header.error');
+      default: return $t('header.stopped');
+    }
+  });
+
   const statusVariant = $derived.by(() => {
     switch ($serverStatus) {
       case 'running': return 'bg-green-500';
@@ -69,7 +78,7 @@
 
     <div class="flex items-center gap-1.5 text-xs text-muted-foreground" data-webview-ignore>
       <span class={cn('w-2 h-2 rounded-full', statusVariant)}></span>
-      <span>{$serverStatus}</span>
+      <span>{statusLabel}</span>
     </div>
   </div>
 
