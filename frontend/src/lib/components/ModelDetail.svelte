@@ -16,7 +16,7 @@
   import { Slider } from '$lib/ui/slider';
   import { NativeSelect, NativeSelectOption } from '$lib/ui/native-select';
   import { Button } from '$lib/ui/button';
-  import type { ModelInfo, Preset } from '$lib/types';
+  import type { ModelInfo, Preset, CustomArg } from '$lib/types';
 
   let preset = $state<Preset>({
     ctx_size: 2048, threads: 4, threads_batch: 0, gpu_layers: 0,

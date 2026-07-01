@@ -3,7 +3,7 @@
   import { api } from '$lib/saucer';
   import { t } from '$lib/i18n';
 
-  let { open = false, onclose }: { open: boolean; onclose: () => void } = $props();
+  let { open = $bindable(false), onclose }: { open: boolean; onclose?: () => void } = $props();
 
   let lines = $state<string[]>([]);
   let container: HTMLDivElement | undefined = $state();

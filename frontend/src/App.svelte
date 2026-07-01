@@ -33,6 +33,7 @@
         port: parseInt(kv.port) || 8080,
         api_key: kv.api_key || '',
         last_model: kv.last_model || '',
+        locale: (kv.locale as Settings['locale']) || 'auto',
       };
       settings.set(s);
       applyLocale(s.locale);
