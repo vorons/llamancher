@@ -50,13 +50,67 @@ jobs:
       - name: Strip debug symbols
         run: strip build/llamancher
 
-      - name: Package binary
+      - name: Package binary (tar.gz)
         run: |
           mkdir -p dist
           cp build/llamancher dist/
           cp README.md dist/
           echo "llamancher ${{ github.ref_name }}" > dist/VERSION
           tar -czf llamancher-linux-x86_64.tar.gz -C dist .
+
+      - name: Create AppImage
+        run: |
+          # Download and extract linuxdeploy + plugins (no FUSE needed)
+          for url in \
+            "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage" \
+            "https://github.com/linuxdeploy/linuxdeploy-plugin-gtk/releases/download/continuous/linuxdeploy-plugin-gtk-x86_64.AppImage" \
+            "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"; do
+            name="$(basename "$url")"
+            wget -q "$url" -P /tmp
+            chmod +x "/tmp/$name"
+            "/tmp/$name" --appimage-extract
+            mv squashfs-root "/tmp/${name%.AppImage}"
+          done
+
+          # AppDir structure
+          mkdir -p AppDir/usr/bin
+          cp build/llamancher AppDir/usr/bin/
+
+          # Desktop entry
+          cat > AppDir/llamancher.desktop << 'DESKTOP'
+[Desktop Entry]
+Type=Application
+Name=llamancher
+Exec=llamancher
+Icon=llamancher
+Categories=Utility;
+Terminal=false
+DESKTOP
+
+          # Icon (256×256 solid PNG via Python)
+          python3 -c "
+import struct, zlib
+w = h = 256
+bg = bytes([26, 26, 46])
+raw = b''
+for _ in range(h):
+    raw += b'\\x00' + bg * w
+def chunk(t, d):
+    c = t + d
+    return struct.pack('>I', len(d)) + c + struct.pack('>I', zlib.crc32(c) & 0xffffffff)
+ihdr = struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)
+idat = zlib.compress(raw)
+with open('AppDir/llamancher.png', 'wb') as f:
+    f.write(b'\\x89PNG\\r\\n\\x1a\\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', idat) + chunk(b'IEND', b''))
+"
+
+          # Bundle shared libraries (including GTK/WebKit)
+          LINUXDEPLOY_OUTPUT=/dev/null \
+          DEPLOY_GTK_VERSION=4 \
+          /tmp/linuxdeploy-x86_64/AppRun --appdir AppDir --plugin gtk
+
+          # Package as AppImage
+          ARCH=x86_64 /tmp/appimagetool-x86_64/AppRun AppDir
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -65,4 +119,6 @@ jobs:
           generate_release_notes: true
           draft: false
           prerelease: false
-          files: llamancher-linux-x86_64.tar.gz
+          files: |
+            llamancher-linux-x86_64.tar.gz
+            llamancher-x86_64.AppImage
