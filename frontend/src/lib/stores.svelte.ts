@@ -13,6 +13,7 @@ export const settings = writable<Settings>({
   port: 8080,
   api_key: '',
   last_model: '',
+  offline: false,
 });
 export const settingsOpen = writable(false);
 

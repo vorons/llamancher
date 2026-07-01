@@ -46,59 +46,29 @@ void Preset::save(const std::string& model_name) const {
 }
 
 std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
-  std::vector<std::string> args = {
-    "--model", model_path,
-    "--ctx-size", std::to_string(ctx_size),
-    "--threads", std::to_string(threads),
-    "--temp", std::to_string(temp),
-    "--top-k", std::to_string(top_k),
-    "--top-p", std::to_string(top_p),
-  };
+  std::vector<std::string> args;
+  args.reserve(64);
 
-  // Model & Loading
+  args.push_back("--model");
+  args.push_back(model_path);
+
+  // ─── Основные ──────────────────────────────────────────
+  if (ctx_size != 2048) {
+    args.push_back("--ctx-size");
+    args.push_back(std::to_string(ctx_size));
+  }
+  if (threads != 4) {
+    args.push_back("--threads");
+    args.push_back(std::to_string(threads));
+  }
+  if (threads_batch > 0) {
+    args.push_back("--threads-batch");
+    args.push_back(std::to_string(threads_batch));
+  }
   if (gpu_layers > 0) {
     args.push_back("--n-gpu-layers");
     args.push_back(std::to_string(gpu_layers));
   }
-  if (!tensor_split.empty()) {
-    args.push_back("--tensor-split");
-    args.push_back(tensor_split);
-  }
-  if (!numa.empty()) {
-    args.push_back("--numa");
-    args.push_back(numa);
-  }
-  if (!split_mode.empty()) {
-    args.push_back("--split-mode");
-    args.push_back(split_mode);
-  }
-  args.push_back("--main-gpu");
-  args.push_back(std::to_string(main_gpu));
-  if (!device.empty()) {
-    args.push_back("--device");
-    args.push_back(device);
-  }
-  if (mlock)    args.emplace_back("--mlock");
-  if (no_mmap)  args.emplace_back("--no-mmap");
-
-  // Jinja & grammar / JSON schema
-  if (!jinja) {
-    args.emplace_back("--no-jinja");
-  }
-  if (!grammar.empty()) {
-    args.push_back("--grammar");
-    args.push_back(grammar);
-  }
-  if (!grammar_file.empty()) {
-    args.push_back("--grammar-file");
-    args.push_back(grammar_file);
-  }
-  if (!json_schema.empty()) {
-    args.push_back("--json-schema");
-    args.push_back(json_schema);
-  }
-
-  // Context & Cache
   if (batch_size != 2048) {
     args.push_back("--batch-size");
     args.push_back(std::to_string(batch_size));
@@ -106,6 +76,10 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
   if (ubatch_size != 512) {
     args.push_back("--ubatch-size");
     args.push_back(std::to_string(ubatch_size));
+  }
+  if (!mmproj.empty()) {
+    args.push_back("--mmproj");
+    args.push_back(mmproj);
   }
   if (!cache_type_k.empty()) {
     args.push_back("--cache-type-k");
@@ -115,24 +89,42 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
     args.push_back("--cache-type-v");
     args.push_back(cache_type_v);
   }
-  if (flash_attn) args.emplace_back("--flash-attn");
-  if (defrag_thold >= 0) {
-    args.push_back("--defrag-thold");
-    args.push_back(std::to_string(defrag_thold));
+  if (parallel != 1) {
+    args.push_back("--parallel");
+    args.push_back(std::to_string(parallel));
   }
-
-  // Sampling
-  if (!samplers.empty()) {
-    args.push_back("--samplers");
-    args.push_back(samplers);
+  if (timeout > 0) {
+    args.push_back("--timeout");
+    args.push_back(std::to_string(timeout));
   }
   if (seed >= 0) {
     args.push_back("--seed");
     args.push_back(std::to_string(seed));
   }
+  if (flash_attn)  args.emplace_back("--flash-attn");
+  if (mlock)       args.emplace_back("--mlock");
+  if (no_mmap)     args.emplace_back("--no-mmap");
+
+  // ─── Генерация ──────────────────────────────────────────
+  if (temp != 0.80f) {
+    args.push_back("--temp");
+    args.push_back(std::to_string(temp));
+  }
+  if (predict >= 0) {
+    args.push_back("--predict");
+    args.push_back(std::to_string(predict));
+  }
   if (min_p != 0.05f) {
     args.push_back("--min-p");
     args.push_back(std::to_string(min_p));
+  }
+  if (top_k != 40) {
+    args.push_back("--top-k");
+    args.push_back(std::to_string(top_k));
+  }
+  if (top_p != 0.95f) {
+    args.push_back("--top-p");
+    args.push_back(std::to_string(top_p));
   }
   if (repeat_penalty != 1.00f) {
     args.push_back("--repeat-penalty");
@@ -146,33 +138,28 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
     args.push_back("--frequency-penalty");
     args.push_back(std::to_string(frequency_penalty));
   }
-  if (mirostat > 0) {
-    args.push_back("--mirostat");
-    args.push_back(std::to_string(mirostat));
+  if (reasoning_mode) args.emplace_back("--reasoning");
+  if (reasoning_budget > 0) {
+    args.push_back("--reasoning-budget");
+    args.push_back(std::to_string(reasoning_budget));
   }
 
-  // Server
-  if (parallel > 1) {
-    args.push_back("--parallel");
-    args.push_back(std::to_string(parallel));
-  }
-  if (no_repack) args.emplace_back("--no-repack");
-
-  // Logging
-  if (verbose)  args.emplace_back("--verbose");
-  if (verbosity > 0) {
-    args.push_back("--verbosity");
-    args.push_back(std::to_string(verbosity));
-  }
-  if (!log_file.empty()) {
-    args.push_back("--log-file");
-    args.push_back(log_file);
-  }
-
-  // Speculative decoding
-  if (!spec_type.empty() && spec_type != "none") {
+  // ─── Спекулятивное декодирование ────────────────────────
+  if (!spec_type.empty()) {
     args.push_back("--spec-type");
     args.push_back(spec_type);
+  }
+  if (!draft_model.empty()) {
+    args.push_back("--draft-model");
+    args.push_back(draft_model);
+  }
+  if (!hf_repo_draft.empty()) {
+    args.push_back("--hf-repo-draft");
+    args.push_back(hf_repo_draft);
+  }
+  if (draft_gpu_layers != 0) {
+    args.push_back("--draft-gpu-layers");
+    args.push_back(std::to_string(draft_gpu_layers));
   }
   if (spec_draft_n_max != 16) {
     args.push_back("--spec-draft-n-max");
@@ -186,61 +173,29 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
     args.push_back("--spec-draft-p-split");
     args.push_back(std::to_string(spec_draft_p_split));
   }
-  if (!draft_model.empty()) {
-    args.push_back("--draft-model");
-    args.push_back(draft_model);
-  }
-  if (draft_gpu_layers > 0 || draft_gpu_layers == -1) {
-    args.push_back("--draft-gpu-layers");
-    args.push_back(std::to_string(draft_gpu_layers));
-  }
-  if (threads_draft > 0) {
-    args.push_back("--threads-draft");
-    args.push_back(std::to_string(threads_draft));
-  }
-  if (threads_batch_draft > 0) {
-    args.push_back("--threads-batch-draft");
-    args.push_back(std::to_string(threads_batch_draft));
-  }
-  if (spec_draft_poll) {
-    args.push_back("--spec-draft-poll");
-    args.push_back("1");
+  if (spec_draft_p_min != 0.0f) {
+    args.push_back("--spec-draft-p-min");
+    args.push_back(std::to_string(spec_draft_p_min));
   }
 
-  // N-gram speculative decoding params
-  if (spec_type.find("ngram") != std::string::npos) {
-    auto push_int = [&](const std::string& flag, int val, int def) {
-      if (val != def) {
-        args.push_back(flag);
-        args.push_back(std::to_string(val));
-      }
-    };
-    push_int("--spec-ngram-mod-n-min",      spec_ngram_mod_n_min, 48);
-    push_int("--spec-ngram-mod-n-max",      spec_ngram_mod_n_max, 64);
-    push_int("--spec-ngram-mod-n-match",    spec_ngram_mod_n_match, 24);
-    push_int("--spec-ngram-simple-size-n",  spec_ngram_simple_size_n, 12);
-    push_int("--spec-ngram-simple-size-m",  spec_ngram_simple_size_m, 48);
-    push_int("--spec-ngram-simple-min-hits", spec_ngram_simple_min_hits, 1);
-    push_int("--spec-ngram-map-k-size-n",   spec_ngram_map_k_size_n, 12);
-    push_int("--spec-ngram-map-k-size-m",   spec_ngram_map_k_size_m, 48);
-    push_int("--spec-ngram-map-k-min-hits", spec_ngram_map_k_min_hits, 1);
-    push_int("--spec-ngram-map-k4v-size-n", spec_ngram_map_k4v_size_n, 12);
-    push_int("--spec-ngram-map-k4v-size-m", spec_ngram_map_k4v_size_m, 48);
-    push_int("--spec-ngram-map-k4v-min-hits", spec_ngram_map_k4v_min_hits, 1);
+  // ─── Дополнительные ─────────────────────────────────────
+  if (!cont_batching) args.emplace_back("--no-cont-batching");
+  if (!webui)         args.emplace_back("--no-webui");
+  if (embedding)      args.emplace_back("--embedding");
+  if (!slots)         args.emplace_back("--no-slots");
+  if (metrics)        args.emplace_back("--metrics");
+  if (!cache_prompt)  args.emplace_back("--no-cache-prompt");
+  if (!context_shift) args.emplace_back("--no-context-shift");
+  if (!alias.empty()) {
+    args.push_back("--alias");
+    args.push_back(alias);
   }
 
-  // Auto-fit
-  if (!fit) {
-    args.push_back("--fit");
-    args.push_back("off");
-  }
-  if (!fit_target_mib.empty()) {
-    args.push_back("--fit-target");
-    args.push_back(fit_target_mib);
-  }
-  if (fit_ctx != 4096) {
-    args.push_back("--fit-ctx");
-    args.push_back(std::to_string(fit_ctx));
+  // ─── Custom CLI args ────────────────────────────────────
+  for (const auto& ca : custom_args) {
+    if (ca.enabled) {
+      args.push_back(ca.arg);
+    }
   }
 
   return args;
