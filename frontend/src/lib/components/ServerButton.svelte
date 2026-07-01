@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Play, Square, Loader2 } from '@lucide/svelte';
   import { cn } from '$lib/utils';
+  import { t } from '$lib/i18n';
   import type { ServerStatus } from '$lib/types';
 
   let {
@@ -37,7 +38,7 @@
   )}
   {onclick}
   disabled={loading || isStarting}
-  aria-label={isActive ? 'Stop server' : 'Start server'}
+  aria-label={isActive ? $t('btn.stop') : $t('btn.start')}
 >
   {#if loading || isStarting}
     <Loader2 size={16} class="animate-spin" />

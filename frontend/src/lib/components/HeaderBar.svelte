@@ -4,6 +4,7 @@
   import { ArrowLeft, RefreshCw, Settings, Minus, Square, X } from '@lucide/svelte';
   import { cn } from '$lib/utils';
   import { Separator } from '$lib/ui/separator';
+  import { t } from '$lib/i18n';
 
   const btn = "flex items-center justify-center h-7 w-7 rounded-md hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all active:scale-95";
 

@@ -101,6 +101,7 @@ export interface Settings {
   port: number;
   api_key: string;
   last_model: string;
+  locale: 'auto' | 'en' | 'ru';
 }
 
 export type ServerStatus = 'stopped' | 'starting' | 'running' | 'error';

@@ -9,6 +9,7 @@
   import ModelList from '$lib/components/ModelList.svelte';
   import ModelDetail from '$lib/components/ModelDetail.svelte';
   import SettingsDialog from '$lib/components/SettingsDialog.svelte';
+  import { t, applyLocale } from '$lib/i18n';
   import type { ModelInfo, Settings } from '$lib/types';
 
   function applyTheme(t: string) {
@@ -34,6 +35,7 @@
         last_model: kv.last_model || '',
       };
       settings.set(s);
+      applyLocale(s.locale);
 
       // Auto-start server on boot
       if (s.auto_start_server && s.last_model && !autoStartDone) {
@@ -68,11 +70,11 @@
     onServerStatus((status) => {
       serverStatus.set(status as 'stopped' | 'starting' | 'running' | 'error');
       if (status === 'running') {
-        toast.success('Server is running');
+        toast.success($t('toast.serverRunning'));
       } else if (status === 'stopped') {
-        toast.info('Server stopped');
+        toast.info($t('toast.serverStopped'));
       } else if (status === 'error') {
-        toast.error('Server error');
+        toast.error($t('toast.serverError'));
       }
     });
 

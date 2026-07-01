@@ -3,6 +3,7 @@
   import ServerButton from '$lib/components/ServerButton.svelte';
   import { api } from '$lib/saucer';
   import { get } from 'svelte/store';
+  import { t } from '$lib/i18n';
   import { toast } from 'svelte-sonner';
   import { Search, ArrowUpDown, ChevronDown } from '@lucide/svelte';
   import { cn } from '$lib/utils';
@@ -15,13 +16,13 @@
   let sortMode = $state<'name-asc' | 'name-desc' | 'size-desc' | 'size-asc' | 'ctx-desc' | 'ctx-asc'>('name-asc');
   let sortOpen = $state(false);
 
-  const sortOptions: { value: typeof sortMode; label: string }[] = [
-    { value: 'name-asc', label: 'Name A→Z' },
-    { value: 'name-desc', label: 'Name Z→A' },
-    { value: 'size-desc', label: 'Size ↓' },
-    { value: 'size-asc', label: 'Size ↑' },
-    { value: 'ctx-desc', label: 'Context ↓' },
-    { value: 'ctx-asc', label: 'Context ↑' },
+  const sortOptions: { value: typeof sortMode; label: () => string }[] = [
+    { value: 'name-asc', label: () => $t('modelList.sort.nameAsc') },
+    { value: 'name-desc', label: () => $t('modelList.sort.nameDesc') },
+    { value: 'size-desc', label: () => $t('modelList.sort.sizeDesc') },
+    { value: 'size-asc', label: () => $t('modelList.sort.sizeAsc') },
+    { value: 'ctx-desc', label: () => $t('modelList.sort.ctxDesc') },
+    { value: 'ctx-asc', label: () => $t('modelList.sort.ctxAsc') },
   ];
 
   function parseSizeGb(s: string): number {
@@ -74,15 +75,15 @@
       if (current === 'stopped') {
         const s = get(settings);
         if (!s.llama_server_path) {
-          toast.error('llama-server executable path is not set. Configure it in Settings.');
+          toast.error($t('toast.setPath'));
           loading = null;
           return;
         }
         const result = await api.startServer(model.name, model.path);
         if (result === 'server_not_stopped') {
-          toast.error('Server is already running');
+          toast.error($t('toast.serverNotStopped'));
         } else if (result === 'server_not_found') {
-          toast.error('llama-server executable not found at ' + s.llama_server_path);
+          toast.error($t('toast.serverNotFound', { path: s.llama_server_path }));
         } else {
           serverModel.set(modelDisplayName(model));
           serverStatus.set('starting');
@@ -97,11 +98,11 @@
         }
         serverStatus.set('stopped');
         serverModel.set('');
-        toast.info(`Stopped ${modelDisplayName(model)}`);
+        toast.info($t('toast.stopped', { name: modelDisplayName(model) }));
       } else if (current === 'running') {
-        toast.warning('Another model is running', {
+        toast.warning($t('toast.anotherRunning'), {
           action: {
-            label: 'Stop & Start',
+            label: $t('toast.stopAndStart'),
             onClick: async () => {
               await api.stopServer();
               setTimeout(async () => {
@@ -112,7 +113,7 @@
         });
       }
     } catch (err) {
-      toast.error('Failed to control server');
+      toast.error($t('toast.failedControl'));
     } finally {
       loading = null;
     }
@@ -130,8 +131,8 @@
   {#if $models.length === 0}
     <div class="flex flex-col items-center justify-center h-full text-muted-foreground">
       <div class="text-4xl mb-2">📂</div>
-      <p class="text-sm">No GGUF models found</p>
-      <p class="text-xs mt-1">Add models to your models directory and click refresh</p>
+      <p class="text-sm">{$t('modelList.empty')}</p>
+      <p class="text-xs mt-1">{$t('modelList.emptyHint')}</p>
     </div>
   {:else}
     <!-- Search & Sort bar -->
@@ -151,7 +152,7 @@
               class:text-foreground={sortMode === opt.value}
               onclick={() => { sortMode = opt.value; closeSort(); }}
             >
-              {opt.label}
+              {opt.label()}
             </button>
           {/each}
         </div>
@@ -164,15 +165,15 @@
         <Search size={14} class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         <input
           type="text"
-          placeholder="Search models…"
-          aria-label="Search models"
+          placeholder={$t('modelList.searchPlaceholder')}
+          aria-label={$t('modelList.searchLabel')}
           bind:value={searchQuery}
           class="w-full h-8 pl-8 pr-3 rounded-md border border-border bg-card text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
         />
       </div>
 
       {#if filtered.length !== $models.length}
-        <span class="text-[10px] text-muted-foreground whitespace-nowrap">{filtered.length} of {$models.length}</span>
+        <span class="text-[10px] text-muted-foreground whitespace-nowrap">{$t('modelList.of', { n: filtered.length, total: $models.length })}</span>
       {/if}
 
       <!-- Sort dropdown trigger -->
@@ -222,7 +223,7 @@
 
       {#if filtered.length === 0}
         <div class="flex items-center justify-center py-8 text-muted-foreground text-sm">
-          No models match "{searchQuery}"
+          {$t('modelList.noMatch', { query: searchQuery })}
         </div>
       {/if}
     </div>
