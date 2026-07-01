@@ -127,6 +127,7 @@
     <!-- Terminal area -->
     <div
       class="flex-1 overflow-y-auto p-3 leading-relaxed whitespace-pre-wrap break-all select-text"
+      style="-webkit-font-smoothing: antialiased; backface-visibility: hidden;"
       class:opacity-60={lines.length === 0}
       bind:this={container}
       onscroll={handleScroll}

@@ -44,9 +44,9 @@
     popoverValue = value;
     const rect = el.getBoundingClientRect();
     const pw = 360;
-    let left = rect.right - pw;
+    let left = Math.round(rect.right) - pw;
     left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
-    popoverPos = { top: rect.bottom + 4, left };
+    popoverPos = { top: Math.round(rect.bottom) + 4, left };
   }
 
   function closePopover() { popoverField = null; popoverPos = null; }
@@ -264,7 +264,7 @@
 
 {#if model}
 <div class="flex-1 overflow-y-auto p-4 space-y-5"
-     style="-webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; isolation: isolate;">
+     style="-webkit-font-smoothing: antialiased; backface-visibility: hidden; text-rendering: optimizeLegibility; isolation: isolate;">
 
   {#if loadingPreset}
     <div class="flex items-center justify-center h-32">

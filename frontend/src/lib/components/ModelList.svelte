@@ -126,7 +126,7 @@
   function closeSort() { sortOpen = false; }
 </script>
 
-<div class="flex-1 overflow-y-auto p-4">
+<div class="flex-1 overflow-y-auto p-4" style="-webkit-font-smoothing: antialiased; backface-visibility: hidden;">
   {#if $models.length === 0}
     <div class="flex flex-col items-center justify-center h-full text-muted-foreground">
       <div class="text-4xl mb-2">📂</div>
