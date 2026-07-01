@@ -19,7 +19,7 @@ jobs:
             cmake ninja-build g++-14 \
             libgtk-4-dev libadwaita-1-dev \
             libwebkitgtk-6.0-dev \
-            libglib2.0-dev libjson-glib-1.0-dev \
+            libglib2.0-dev libjson-glib-dev \
             pkg-config curl ca-certificates
 
       - uses: pnpm/action-setup@v4
