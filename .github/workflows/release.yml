@@ -60,31 +60,30 @@ jobs:
 
       - name: Create AppImage
         run: |
-          # Download linuxdeploy (extract to avoid FUSE)
-          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -O /tmp/linuxdeploy.AppImage
-          chmod +x /tmp/linuxdeploy.AppImage
-          /tmp/linuxdeploy.AppImage --appimage-extract
-          mv squashfs-root /tmp/linuxdeploy
-          # Download GTK plugin (shell script, not AppImage)
-          mkdir -p /tmp/plugins
-          wget -q https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh -O /tmp/plugins/linuxdeploy-plugin-gtk.sh
-          chmod +x /tmp/plugins/linuxdeploy-plugin-gtk.sh
-          # Download appimagetool (extract to avoid FUSE)
-          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /tmp/appimagetool.AppImage
-          chmod +x /tmp/appimagetool.AppImage
-          /tmp/appimagetool.AppImage --appimage-extract
-          mv squashfs-root /tmp/appimagetool
-          # AppDir
-          mkdir -p AppDir/usr/bin
-          cp build/llamancher AppDir/usr/bin/
-          # Desktop entry
-          printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=llamancher' 'Exec=llamancher' 'Icon=llamancher' 'Categories=Utility;' 'Terminal=false' 'StartupWMClass=app.saucer.llamancher' > AppDir/llamancher.desktop
-          # Icon
-          cp assets/llamancher.png AppDir/
-          # Bundle shared libraries (WebKitGTK excluded — use system one)
-          LINUXDEPLOY_OUTPUT=/dev/null DEPLOY_GTK_VERSION=4 LINUXDEPLOY_PLUGIN_DIR=/tmp/plugins /tmp/linuxdeploy/AppRun --appdir AppDir --exclude-library='libwebkitgtk*' --exclude-library='libjavascriptcoregtk*' --plugin gtk
-          # Package as AppImage
-          ARCH=x86_64 /tmp/appimagetool/AppRun AppDir
+          # Download appimagetool (handle FUSE-less env)
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /tmp/appimagetool
+          chmod +x /tmp/appimagetool
+          if ! /tmp/appimagetool --version &>/dev/null; then
+            /tmp/appimagetool --appimage-extract >/dev/null 2>&1
+            mv squashfs-root /tmp/appimagetool-root
+            TOOL=/tmp/appimagetool-root/AppRun
+          else
+            TOOL=/tmp/appimagetool
+          fi
+          # AppDir structure (manual — no linuxdeploy)
+          APPDIR=build/llamancher.AppDir
+          rm -rf "$APPDIR"
+          mkdir -p "$APPDIR/usr/bin"
+          cp build/llamancher "$APPDIR/usr/bin/"
+          # AppRun entry point (no heredoc — YAML block scalar can't have column-0 lines)
+          printf '%s\n' '#!/usr/bin/env bash' 'HERE="$(cd "$(dirname "$0")" && pwd)"' 'exec "$HERE/usr/bin/llamancher" "$@"' > "$APPDIR/AppRun"
+          chmod +x "$APPDIR/AppRun"
+          # Desktop entry + icon (root-level for appimagetool discovery)
+          printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=llamancher' 'Exec=llamancher' 'Icon=llamancher' 'Categories=Utility;' 'Terminal=false' 'StartupWMClass=app.saucer.llamancher' > "$APPDIR/llamancher.desktop"
+          cp assets/llamancher.png "$APPDIR/"
+          cp "$APPDIR/llamancher.png" "$APPDIR/.DirIcon"
+          # Package
+          ARCH=x86_64 "$TOOL" "$APPDIR" build/llamancher-x86_64.AppImage
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -95,4 +94,4 @@ jobs:
           prerelease: false
           files: |
             llamancher-linux-x86_64.tar.gz
-            llamancher-x86_64.AppImage
+            build/llamancher-x86_64.AppImage
