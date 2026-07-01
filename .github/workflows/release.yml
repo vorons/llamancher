@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build llamancher
@@ -86,7 +89,7 @@ jobs:
           ARCH=x86_64 "$TOOL" "$APPDIR" build/llamancher-x86_64.AppImage
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.6.0
         with:
           name: llamancher ${{ github.ref_name }}
           generate_release_notes: true
