@@ -104,10 +104,14 @@ with open('AppDir/llamancher.png', 'wb') as f:
     f.write(b'\\x89PNG\\r\\n\\x1a\\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', idat) + chunk(b'IEND', b''))
 "
 
-          # Bundle shared libraries (including GTK/WebKit)
+          # Bundle shared libraries (WebKitGTK excluded — use system one)
           LINUXDEPLOY_OUTPUT=/dev/null \
           DEPLOY_GTK_VERSION=4 \
-          /tmp/linuxdeploy-x86_64/AppRun --appdir AppDir --plugin gtk
+          /tmp/linuxdeploy-x86_64/AppRun \
+            --appdir AppDir \
+            --exclude-library='libwebkitgtk*' \
+            --exclude-library='libjavascriptcoregtk*' \
+            --plugin gtk
 
           # Package as AppImage
           ARCH=x86_64 /tmp/appimagetool-x86_64/AppRun AppDir
