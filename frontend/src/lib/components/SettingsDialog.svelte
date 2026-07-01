@@ -7,8 +7,7 @@
   import { Switch } from '$lib/ui/switch';
   import { Separator } from '$lib/ui/separator';
   import { Button } from '$lib/ui/button';
-  import { NativeSelect, NativeSelectOption } from '$lib/ui/native-select';
-  import { t, applyLocale, detectSystemLocale } from '$lib/i18n';
+  import { t } from '$lib/i18n';
 
   // Local copies for editing
   let llamaServerPath = $state('');
@@ -19,7 +18,6 @@
   let apiKey = $state('');
 
   let saveTimer: ReturnType<typeof setTimeout>;
-  let locale = $state<'auto' | 'en' | 'ru'>('auto');
 
   // Sync from store when dialog opens
   $effect(() => {
@@ -30,7 +28,6 @@
       isLight = $settings.theme === 'light';
       port = String($settings.port);
       apiKey = $settings.api_key || '';
-      locale = $settings.locale;
     }
   });
 
@@ -200,31 +197,6 @@
           }}
         />
       </div>
-
-      <Separator />
-
-      <div class="flex items-center justify-between">
-        <div>
-          <Label for="locale">{$t('settings.language')}</Label>
-          <p class="text-xs text-muted-foreground">{$t('settings.language.desc')}</p>
-        </div>
-        <NativeSelect
-          id="locale"
-          class="w-36"
-          value={locale}
-          onchange={(e) => {
-            const v = e.currentTarget.value as 'auto' | 'en' | 'ru';
-            locale = v;
-            applyLocale(v);
-            saveSetting('locale', v);
-          }}
-        >
-          <NativeSelectOption value="auto">{$t('settings.language.auto', { lang: detectSystemLocale() })}</NativeSelectOption>
-          <NativeSelectOption value="en">English</NativeSelectOption>
-          <NativeSelectOption value="ru">Русский</NativeSelectOption>
-        </NativeSelect>
-      </div>
-
     </div>
   </Dialog.Content>
 </Dialog.Root>

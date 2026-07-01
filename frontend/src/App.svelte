@@ -36,7 +36,7 @@
         locale: (kv.locale as Settings['locale']) || 'auto',
       };
       settings.set(s);
-      applyLocale(s.locale);
+      applyLocale('auto');
 
       // Auto-start server on boot
       if (s.auto_start_server && s.last_model && !autoStartDone) {
