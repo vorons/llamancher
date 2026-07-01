@@ -278,7 +278,7 @@
     <div class="flex items-start justify-between gap-4">
       <div class="min-w-0">
         <h2 class="text-lg font-semibold truncate">
-          {model.name}
+          {modelDisplayName(model)}
           {#if model.has_vision === 'true'}
             <span class="inline-flex items-center align-middle ml-1.5" title="Vision support">
               <Camera size={15} class="text-muted-foreground" />
