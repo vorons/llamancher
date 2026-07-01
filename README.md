@@ -1,6 +1,12 @@
+<img src="https://github.com/vorons/llamancher/raw/main/assets/treeble.png" alt="Treeble" width="256" height="251">
+
 # llamancher
 
 > Desktop GUI for managing and launching GGUF models via `llama-server`.
+
+![Screenshot](https://github.com/vorons/llamancher/raw/main/assets/screenshot1.png)
+
+![Screenshot](https://github.com/vorons/llamancher/raw/main/assets/screenshot2.png)
 
 Scans a directory for `.gguf` files, lets you configure per-model presets (context size, GPU layers, sampling params), and launches `llama-server` as a child process — all from a borderless window with a dark theme.
 
