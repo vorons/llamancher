@@ -11,13 +11,13 @@ Scans a directory for `.gguf` files, lets you configure per-model presets (conte
 
 - **Model browser** — scans a directory for GGUF files, detects quantization from filename
 - **Rich metadata extraction** — reads 27+ GGUF metadata fields (model name, description, author, license, architecture params, MoE config, sampling defaults, tokenizer config, chat templates, vision/audio support) and caches them in the preset
-- **Per-model presets** — полный редактор всех параметров llama-server: размер контекста, слои GPU, семплинг (temp, top-k/p, min-p, repeat/presence/frequency penalty, mirostat), KV cache (batch/ubatch size, cache types, flash-attn), speculative decoding, auto-fit и другие. Metadata из GGUF (architecture, sampling defaults) автоматически заполняются при создании пресета
+- **Per-model presets** — full editor for all llama-server parameters: context size, GPU layers, sampling (temp, top-k/p, min-p, repeat/presence/frequency penalty, mirostat), KV cache (batch/ubatch size, cache types, flash-attn), speculative decoding, auto-fit, and more. GGUF metadata (architecture, sampling defaults) is auto-populated when creating a preset
 - **Server lifecycle** — start/stop `llama-server`, health polling, status displayed in UI
 - **Persistent settings** — `~/.config/llamancher/settings.json`
 - **Persistent presets** — `~/.llamancher/models/<name>.preset.json`
 - **Borderless window** — custom title bar via Svelte, `window::decoration::partial`
 - **Embedded frontend** — production builds bundle the Svelte app into the binary (no extra files)
-- **Array-safe GGUF parser** — рекурсивный `skip_value()` не падает на массивах и неизвестных типах данных
+- **Array-safe GGUF parser** — recursive `skip_value()` doesn't crash on arrays or unknown data types
 
 ## Requirements
 
@@ -132,7 +132,7 @@ cmake --build build --preset debug     # debug (fast iteration)
 }
 ```
 
-**`~/.llamancher/models/<name>.preset.json`** — при первом сканировании пресет автоматически заполняется метаданными из GGUF-файла. При повторном сканировании метаданные обновляются.
+**`~/.llamancher/models/<name>.preset.json`** — on first scan, the preset is auto-populated with GGUF metadata. On subsequent scans, metadata is refreshed.
 
 ```json
 {
@@ -209,12 +209,12 @@ cmake --build build --preset debug     # debug (fast iteration)
 }
 ```
 
-> Поля метаданных (`display_name`, `vocab_size`, `sample_*` и др.) автоматически читаются из GGUF-файла. Если файл не содержит поле — в JSON попадает пустая строка или `0`. Старые пресеты без этих полей продолжают работать (используются нулевые значения по умолчанию). `general.sampling.*` переопределяют жёсткие дефолты семплинга, если значение > 0.001.
+> Metadata fields (`display_name`, `vocab_size`, `sample_*`, etc.) are automatically read from the GGUF file. If the file lacks the field, an empty string or `0` is stored in JSON. Old presets without these fields continue to work (fallback to zero defaults). `general.sampling.*` overrides hardcoded sampling defaults when the value exceeds 0.001.
 
-Секции редактора на экране деталей модели:
+Editor sections on the model detail screen:
 
-| Секция | Параметры |
-|--------|-----------|
+| Section | Parameters |
+|---------|------------|
 | **Basic** | Context Size, Threads |
 | **Model & Loading** | GPU Layers (+All), Tensor Split, NUMA, Split Mode, Main GPU, Devices, mlock, no_mmap |
 | **Context & Cache** | Batch Size, UBatch Size, Cache Type K/V, Flash Attention, Defrag Threshold |
@@ -224,7 +224,7 @@ cmake --build build --preset debug     # debug (fast iteration)
 | **Speculative Decoding** | Spec Type, Draft N Max/Min, P Split, Draft Model, Draft GPU Layers, Draft Threads, Draft Polling |
 | **Auto-fit** | Fit on/off, Fit Target, Fit Min Ctx |
 
-Большинство секций свёрнуты по умолчанию — раскрываются по клику.
+Most sections are collapsed by default — they expand on click.
 
 ## Technical notes
 
