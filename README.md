@@ -1,4 +1,4 @@
-<img src="https://github.com/vorons/llamancher/raw/main/assets/treeble.png" alt="Treeble" width="256" height="251">
+<img src="https://github.com/vorons/llamancher/raw/main/assets/llamancher.png" alt="llamancher" width="256" height="251">
 
 # llamancher
 
