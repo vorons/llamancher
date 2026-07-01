@@ -11,6 +11,7 @@ struct Settings {
   int port = 8080;
   std::string api_key;
   std::string last_model;
+  bool offline = false;
 
   Settings();
 
@@ -32,6 +33,7 @@ struct glz::meta<Settings> {
     "theme",              &T::theme,
     "port",               &T::port,
     "api_key",            &T::api_key,
-    "last_model",         &T::last_model
+    "last_model",         &T::last_model,
+    "offline",             &T::offline
   );
 };

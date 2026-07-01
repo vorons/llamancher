@@ -17,6 +17,8 @@
 #include <cstdio>
 #include <fstream>
 #include <deque>
+#include <glaze/json/write.hpp>
+#include <glaze/json/read.hpp>
 
 // Observer that bridges server status → JS via saucer execute
 class StatusBridge : public ServerObserver {
@@ -153,6 +155,7 @@ int main(int argc, char* argv[]) {
         {"port",              std::to_string(settings->port)},
         {"api_key",           settings->api_key},
         {"last_model",        settings->last_model},
+        {"offline",           settings->offline ? "true" : "false"},
       };
     });
 
@@ -165,6 +168,7 @@ int main(int argc, char* argv[]) {
       else if (key == "port")         try { settings->port = std::stoi(value); } catch (...) {}
       else if (key == "api_key")      settings->api_key = value;
       else if (key == "last_model")   settings->last_model = value;
+      else if (key == "offline")      settings->offline = (value == "true");
       settings->save();
     });
 
@@ -208,7 +212,6 @@ int main(int argc, char* argv[]) {
           if (m.sample_top_k > 0.001f)  p.top_k = static_cast<int>(m.sample_top_k);
           if (m.sample_top_p > 0.001f)  p.top_p = m.sample_top_p;
           if (m.sample_min_p > 0.001f)  p.min_p = m.sample_min_p;
-          if (m.sample_mirostat > 0.001f) p.mirostat = static_cast<int>(m.sample_mirostat);
           p.save(m.name);
         }
       }
@@ -255,72 +258,55 @@ int main(int argc, char* argv[]) {
 
     webview->expose("load_preset", [](const std::string& model_name) {
       auto p = Preset::load(model_name);
-      return std::map<std::string, std::string>{
-        // Basic
-        {"ctx_size",     std::to_string(p.ctx_size)},
-        {"threads",      std::to_string(p.threads)},
-        // Model & Loading
-        {"gpu_layers",   std::to_string(p.gpu_layers)},
-        {"tensor_split", p.tensor_split},
-        {"numa",         p.numa},
-        {"split_mode",   p.split_mode},
-        {"main_gpu",     std::to_string(p.main_gpu)},
-        {"device",       p.device},
-        {"mlock",        p.mlock ? "true" : "false"},
-        {"no_mmap",      p.no_mmap ? "true" : "false"},
-        {"jinja",        p.jinja ? "true" : "false"},
-        {"grammar",      p.grammar},
-        {"grammar_file", p.grammar_file},
-        {"json_schema",  p.json_schema},
-        // Context & Cache
-        {"batch_size",   std::to_string(p.batch_size)},
-        {"ubatch_size",  std::to_string(p.ubatch_size)},
-        {"cache_type_k", p.cache_type_k},
-        {"cache_type_v", p.cache_type_v},
-        {"flash_attn",   p.flash_attn ? "true" : "false"},
-        {"defrag_thold", std::to_string(p.defrag_thold)},
-        // Sampling
-        {"samplers",          p.samplers},
-        {"seed",              std::to_string(p.seed)},
+      auto result = std::map<std::string, std::string>{
+        // ─── Основные ────────────────────────────────────
+        {"ctx_size",      std::to_string(p.ctx_size)},
+        {"threads",       std::to_string(p.threads)},
+        {"threads_batch", std::to_string(p.threads_batch)},
+        {"gpu_layers",    std::to_string(p.gpu_layers)},
+        {"batch_size",    std::to_string(p.batch_size)},
+        {"ubatch_size",   std::to_string(p.ubatch_size)},
+        {"mmproj",        p.mmproj},
+        {"cache_type_k",  p.cache_type_k},
+        {"cache_type_v",  p.cache_type_v},
+        {"parallel",      std::to_string(p.parallel)},
+        {"timeout",       std::to_string(p.timeout)},
+        {"seed",          std::to_string(p.seed)},
+        {"flash_attn",    p.flash_attn ? "true" : "false"},
+        {"mlock",         p.mlock ? "true" : "false"},
+        {"no_mmap",       p.no_mmap ? "true" : "false"},
+        // ─── Генерация ────────────────────────────────────
         {"temp",              std::to_string(p.temp)},
+        {"predict",           std::to_string(p.predict)},
+        {"min_p",             std::to_string(p.min_p)},
         {"top_k",             std::to_string(p.top_k)},
         {"top_p",             std::to_string(p.top_p)},
-        {"min_p",             std::to_string(p.min_p)},
         {"repeat_penalty",    std::to_string(p.repeat_penalty)},
         {"presence_penalty",  std::to_string(p.presence_penalty)},
         {"frequency_penalty", std::to_string(p.frequency_penalty)},
-        {"mirostat",          std::to_string(p.mirostat)},
-        // Server
-        {"parallel",   std::to_string(p.parallel)},
-        {"no_repack",  p.no_repack ? "true" : "false"},
-        // Logging
-        {"verbose",    p.verbose ? "true" : "false"},
-        {"verbosity",  std::to_string(p.verbosity)},
-        {"log_file",   p.log_file},
-        // Speculative decoding
-        {"spec_type",             p.spec_type},
-        {"spec_draft_n_max",      std::to_string(p.spec_draft_n_max)},
-        {"spec_draft_n_min",      std::to_string(p.spec_draft_n_min)},
-        {"spec_draft_p_split",    std::to_string(p.spec_draft_p_split)},
-        {"draft_model",           p.draft_model},
-        {"draft_gpu_layers",      std::to_string(p.draft_gpu_layers)},
-        {"threads_draft",         std::to_string(p.threads_draft)},
-        {"threads_batch_draft",   std::to_string(p.threads_batch_draft)},
-        {"spec_draft_poll",       p.spec_draft_poll ? "true" : "false"},
-        // N-gram params
-        {"spec_ngram_mod_n_min",      std::to_string(p.spec_ngram_mod_n_min)},
-        {"spec_ngram_mod_n_max",      std::to_string(p.spec_ngram_mod_n_max)},
-        {"spec_ngram_mod_n_match",    std::to_string(p.spec_ngram_mod_n_match)},
-        {"spec_ngram_simple_size_n",  std::to_string(p.spec_ngram_simple_size_n)},
-        {"spec_ngram_simple_size_m",  std::to_string(p.spec_ngram_simple_size_m)},
-        {"spec_ngram_simple_min_hits", std::to_string(p.spec_ngram_simple_min_hits)},
-        {"spec_ngram_map_k_size_n",   std::to_string(p.spec_ngram_map_k_size_n)},
-        {"spec_ngram_map_k_size_m",   std::to_string(p.spec_ngram_map_k_size_m)},
-        {"spec_ngram_map_k_min_hits", std::to_string(p.spec_ngram_map_k_min_hits)},
-        {"spec_ngram_map_k4v_size_n",  std::to_string(p.spec_ngram_map_k4v_size_n)},
-        {"spec_ngram_map_k4v_size_m",  std::to_string(p.spec_ngram_map_k4v_size_m)},
-        {"spec_ngram_map_k4v_min_hits", std::to_string(p.spec_ngram_map_k4v_min_hits)},
-        // Extended metadata
+        {"reasoning_mode",    p.reasoning_mode ? "true" : "false"},
+        {"reasoning_budget",  std::to_string(p.reasoning_budget)},
+        // ─── Спекулятивное декодирование ────────────────────
+        {"spec_type",        p.spec_type},
+        {"draft_model",      p.draft_model},
+        {"hf_repo_draft",    p.hf_repo_draft},
+        {"draft_gpu_layers", std::to_string(p.draft_gpu_layers)},
+        {"spec_draft_n_max", std::to_string(p.spec_draft_n_max)},
+        {"spec_draft_n_min", std::to_string(p.spec_draft_n_min)},
+        {"spec_draft_p_split", std::to_string(p.spec_draft_p_split)},
+        {"spec_draft_p_min", std::to_string(p.spec_draft_p_min)},
+        // ─── Дополнительные ─────────────────────────────────
+        {"cont_batching", p.cont_batching ? "true" : "false"},
+        {"webui",         p.webui ? "true" : "false"},
+        {"embedding",     p.embedding ? "true" : "false"},
+        {"slots",         p.slots ? "true" : "false"},
+        {"metrics",       p.metrics ? "true" : "false"},
+        {"cache_prompt",  p.cache_prompt ? "true" : "false"},
+        {"context_shift", p.context_shift ? "true" : "false"},
+        {"alias",         p.alias},
+        // ─── Custom args (JSON) ─────────────────────────────
+        {"custom_args",   glz::write_json(p.custom_args).value_or("[]")},
+        // ─── GGUF metadata ─────────────────────────────────
         {"display_name",        p.display_name},
         {"size_label",          p.size_label},
         {"license",             p.license},
@@ -343,11 +329,8 @@ int main(int argc, char* argv[]) {
         {"chat_templates",      p.chat_templates},
         {"has_vision",          p.has_vision ? "true" : "false"},
         {"has_audio",           p.has_audio ? "true" : "false"},
-        // Auto-fit
-        {"fit",            p.fit ? "true" : "false"},
-        {"fit_target_mib", p.fit_target_mib},
-        {"fit_ctx",        std::to_string(p.fit_ctx)},
       };
+      return result;
     });
 
     webview->expose("save_preset", [](const std::string& model_name,
@@ -372,71 +355,60 @@ int main(int argc, char* argv[]) {
         if (kv.contains(k)) v = (kv.at(k) == "true");
       };
 
-      // Basic
-      gi("ctx_size",     p.ctx_size);
-      gi("threads",      p.threads);
-      // Model & Loading
-      gi("gpu_layers",   p.gpu_layers);
-      gs("tensor_split", p.tensor_split);
-      gs("numa",         p.numa);
-      gs("split_mode",   p.split_mode);
-      gi("main_gpu",     p.main_gpu);
-      gs("device",       p.device);
-      gb("mlock",        p.mlock);
-      gb("no_mmap",      p.no_mmap);
-      gb("jinja",        p.jinja);
-      gs("grammar",      p.grammar);
-      gs("grammar_file", p.grammar_file);
-      gs("json_schema",  p.json_schema);
-      // Context & Cache
-      gi("batch_size",   p.batch_size);
-      gi("ubatch_size",  p.ubatch_size);
-      gs("cache_type_k", p.cache_type_k);
-      gs("cache_type_v", p.cache_type_v);
-      gb("flash_attn",   p.flash_attn);
-      gi("defrag_thold", p.defrag_thold);
-      // Sampling
-      gs("samplers",          p.samplers);
-      gi("seed",              p.seed);
+      // ─── Основные ──────────────────────────────────────
+      gi("ctx_size",      p.ctx_size);
+      gi("threads",       p.threads);
+      gi("threads_batch", p.threads_batch);
+      gi("gpu_layers",    p.gpu_layers);
+      gi("batch_size",    p.batch_size);
+      gi("ubatch_size",   p.ubatch_size);
+      gs("mmproj",        p.mmproj);
+      gs("cache_type_k",  p.cache_type_k);
+      gs("cache_type_v",  p.cache_type_v);
+      gi("parallel",      p.parallel);
+      gi("timeout",       p.timeout);
+      gi("seed",          p.seed);
+      gb("flash_attn",    p.flash_attn);
+      gb("mlock",         p.mlock);
+      gb("no_mmap",       p.no_mmap);
+      // ─── Генерация ────────────────────────────────────
       gf("temp",              p.temp);
+      gi("predict",           p.predict);
+      gf("min_p",             p.min_p);
       gi("top_k",             p.top_k);
       gf("top_p",             p.top_p);
-      gf("min_p",             p.min_p);
       gf("repeat_penalty",    p.repeat_penalty);
       gf("presence_penalty",  p.presence_penalty);
       gf("frequency_penalty", p.frequency_penalty);
-      gi("mirostat",          p.mirostat);
-      // Server
-      gi("parallel",   p.parallel);
-      gb("no_repack",  p.no_repack);
-      // Logging
-      gb("verbose",    p.verbose);
-      gi("verbosity",  p.verbosity);
-      gs("log_file",   p.log_file);
-      // Speculative decoding
-      gs("spec_type",             p.spec_type);
-      gi("spec_draft_n_max",      p.spec_draft_n_max);
-      gi("spec_draft_n_min",      p.spec_draft_n_min);
-      gf("spec_draft_p_split",    p.spec_draft_p_split);
-      gs("draft_model",           p.draft_model);
-      gi("draft_gpu_layers",      p.draft_gpu_layers);
-      gi("threads_draft",         p.threads_draft);
-      gi("threads_batch_draft",   p.threads_batch_draft);
-      gb("spec_draft_poll",       p.spec_draft_poll);
-      // N-gram
-      gi("spec_ngram_mod_n_min",       p.spec_ngram_mod_n_min);
-      gi("spec_ngram_mod_n_max",       p.spec_ngram_mod_n_max);
-      gi("spec_ngram_mod_n_match",     p.spec_ngram_mod_n_match);
-      gi("spec_ngram_simple_size_n",   p.spec_ngram_simple_size_n);
-      gi("spec_ngram_simple_size_m",   p.spec_ngram_simple_size_m);
-      gi("spec_ngram_simple_min_hits", p.spec_ngram_simple_min_hits);
-      gi("spec_ngram_map_k_size_n",    p.spec_ngram_map_k_size_n);
-      gi("spec_ngram_map_k_size_m",    p.spec_ngram_map_k_size_m);
-      gi("spec_ngram_map_k_min_hits",  p.spec_ngram_map_k_min_hits);
-      gi("spec_ngram_map_k4v_size_n",   p.spec_ngram_map_k4v_size_n);
-      gi("spec_ngram_map_k4v_size_m",   p.spec_ngram_map_k4v_size_m);
-      gi("spec_ngram_map_k4v_min_hits", p.spec_ngram_map_k4v_min_hits);
-      // Extended metadata
+      gb("reasoning_mode",    p.reasoning_mode);
+      gi("reasoning_budget",  p.reasoning_budget);
+      // ─── Спекулятивное декодирование ──────────────────
+      gs("spec_type",        p.spec_type);
+      gs("draft_model",      p.draft_model);
+      gs("hf_repo_draft",    p.hf_repo_draft);
+      gi("draft_gpu_layers", p.draft_gpu_layers);
+      gi("spec_draft_n_max", p.spec_draft_n_max);
+      gi("spec_draft_n_min", p.spec_draft_n_min);
+      gf("spec_draft_p_split", p.spec_draft_p_split);
+      gf("spec_draft_p_min", p.spec_draft_p_min);
+      // ─── Дополнительные ───────────────────────────────
+      gb("cont_batching",  p.cont_batching);
+      gb("webui",          p.webui);
+      gb("embedding",      p.embedding);
+      gb("slots",          p.slots);
+      gb("metrics",        p.metrics);
+      gb("cache_prompt",   p.cache_prompt);
+      gb("context_shift",  p.context_shift);
+      gs("alias",          p.alias);
+      // ─── Custom args (JSON) ───────────────────────────
+      if (kv.contains("custom_args")) {
+        auto ec = glz::read_json(p.custom_args, kv.at("custom_args"));
+        if (ec) {
+          std::fprintf(stderr, "llamancher: invalid custom_args JSON — %s\n",
+                       glz::format_error(ec).c_str());
+        }
+      }
+      // ─── GGUF metadata ───────────────────────────────
       gs("display_name",        p.display_name);
       gs("size_label",          p.size_label);
       gs("license",             p.license);
@@ -453,17 +425,12 @@ int main(int argc, char* argv[]) {
       gu("expert_count",        p.expert_count);
       gu("expert_used_count",   p.expert_used_count);
       gs("tokenizer_model",     p.tokenizer_model);
-      // int32_t fields — use explicit cast since gi expects int&
       { if (kv.contains("bos_token_id")) try { p.bos_token_id = static_cast<int32_t>(std::stoi(kv.at("bos_token_id"))); } catch (...) {} }
       { if (kv.contains("eos_token_id")) try { p.eos_token_id = static_cast<int32_t>(std::stoi(kv.at("eos_token_id"))); } catch (...) {} }
       gs("chat_template",       p.chat_template);
       gs("chat_templates",      p.chat_templates);
       gb("has_vision",          p.has_vision);
       gb("has_audio",           p.has_audio);
-      // Auto-fit
-      gb("fit",            p.fit);
-      gs("fit_target_mib", p.fit_target_mib);
-      gi("fit_ctx",        p.fit_ctx);
 
       p.save(model_name);
     });
@@ -497,6 +464,9 @@ int main(int argc, char* argv[]) {
       if (!settings->api_key.empty()) {
         args.push_back("--api-key");
         args.push_back(settings->api_key);
+      }
+      if (settings->offline) {
+        args.push_back("--offline");
       }
       server_mgr->start(settings->llama_server_path, args);
       // Use display_name from preset for the title, fallback to filename stem

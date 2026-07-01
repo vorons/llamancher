@@ -33,116 +33,63 @@ export interface ModelInfo {
   has_audio: string;
 }
 
+export interface CustomArg {
+  arg: string;
+  enabled: boolean;
+}
+
 export interface Preset {
-  // Basic
+  // ─── Основные ────────────────────────
   ctx_size: number;
   threads: number;
-
-  // Model & Loading
-  gpu_layers: number;           // 0-100
-  tensor_split: string;
-  numa: string;                  // '' | 'distribute' | 'isolate'
-  split_mode: string;            // 'none' | 'layer' | 'row' | 'tensor'
-  main_gpu: number;              // GPU index
-  device: string;                // comma-separated device list
-  mlock: boolean;
-  no_mmap: boolean;
-  jinja: boolean;                // use jinja template engine
-  grammar: string;               // BNF grammar
-  grammar_file: string;          // grammar file path
-  json_schema: string;           // JSON schema
-
-  // Context & Cache
+  threads_batch: number;       // 0 = auto
+  gpu_layers: number;          // 0 = auto, 100+ = all
   batch_size: number;
   ubatch_size: number;
-  cache_type_k: string;          // '' | 'f16' | 'q8_0' | ...
-  cache_type_v: string;
+  mmproj: string;
+  cache_type_k: string;        // "" = default f16
+  cache_type_v: string;        // "" = default f16
+  parallel: number;            // -np
+  timeout: number;             // -to, 0 = no timeout
+  seed: number;                // -1 = random
   flash_attn: boolean;
-  defrag_thold: number;          // -1 = off (deprecated)
+  mlock: boolean;
+  no_mmap: boolean;            // false = mmap enabled
 
-  // Sampling
-  samplers: string;              // e.g. 'top_k;top_p;temperature'
-  seed: number;                  // -1 = random
+  // ─── Генерация ───────────────────────
   temp: number;
+  predict: number;             // -1 = unlimited
+  min_p: number;
   top_k: number;
   top_p: number;
-  min_p: number;
   repeat_penalty: number;
   presence_penalty: number;
   frequency_penalty: number;
-  mirostat: number;              // 0=off, 1=v1, 2=v2
+  reasoning_mode: boolean;
+  reasoning_budget: number;
 
-  // Server
-  parallel: number;
-  no_repack: boolean;
-
-  // Logging
-  verbose: boolean;
-  verbosity: number;             // 0-5
-  log_file: string;
-
-  // Speculative decoding
-  spec_type: string;             // 'none' | 'draft-mtp' | 'draft-model' | 'ngram-*'
+  // ─── Спекулятивное декодирование ─────
+  spec_type: string;           // "" = none
+  draft_model: string;
+  hf_repo_draft: string;
+  draft_gpu_layers: number;
   spec_draft_n_max: number;
   spec_draft_n_min: number;
   spec_draft_p_split: number;
-  draft_model: string;
-  draft_gpu_layers: number;      // -1 = all, 0 = none
-  threads_draft: number;
-  threads_batch_draft: number;
-  spec_draft_poll: boolean;
+  spec_draft_p_min: number;
 
-  // N-gram params
-  spec_ngram_mod_n_min: number;
-  spec_ngram_mod_n_max: number;
-  spec_ngram_mod_n_match: number;
-  spec_ngram_simple_size_n: number;
-  spec_ngram_simple_size_m: number;
-  spec_ngram_simple_min_hits: number;
-  spec_ngram_map_k_size_n: number;
-  spec_ngram_map_k_size_m: number;
-  spec_ngram_map_k_min_hits: number;
-  spec_ngram_map_k4v_size_n: number;
-  spec_ngram_map_k4v_size_m: number;
-  spec_ngram_map_k4v_min_hits: number;
+  // ─── Дополнительные ─────────────────
+  cont_batching: boolean;
+  webui: boolean;
+  embedding: boolean;
+  slots: boolean;
+  metrics: boolean;
+  cache_prompt: boolean;
+  context_shift: boolean;
+  alias: string;
 
-  // Chat template override
-  chat_template: string;
-
-  // Auto-fit
-  fit: boolean;
-  fit_target_mib: string;        // comma-separated
-  fit_ctx: number;
-
-  // --- Fields from the comprehensive launch-params spec ---
-
-  // Основные (Main)
-  predict: number;               // -n, --predict (default -1 = unlimited)
-
-  // Дополнительные (Additional)
-  json_schema_file: string;      // -jf
-  cache_type_k_draft: string;    // -ctkd, draft-model KV cache type
-  mmproj: string;                // -mm, --mmproj, multimodal projector
-
-  // Специализированные (Specialized)
-  rope_scaling: string;          // 'none' | 'linear' | 'yarn'
-  rope_scale: number;            // --rope-scale
-  yarn_attn_factor: number;      // --yarn-attn-factor (alpha)
-  yarn_beta_fast: number;        // --yarn-beta-fast
-  yarn_beta_slow: number;        // --yarn-beta-slow
-  yarn_orig_ctx: number;         // --yarn-orig-ctx
-  lora: string;                  // --lora path
-  lora_scaled: string;           // --lora-scaled path,scale
-  control_vector: string;        // --control-vector path
-  metrics: boolean;              // --metrics endpoint
-  offline: boolean;              // --offline (cache only)
-  slot_save_path: string;        // --slot-save-path
-  sleep_idle_seconds: number;    // --sleep-idle-seconds
-  webui: boolean;                // --webui
-
-  // Server-mode flags (used for dependency logic)
-  embedding: boolean;            // --embedding (hides sampling params)
-  rerank: boolean;               // --rerank (hides sampling params)
+  // ─── Custom CLI args ────────────────
+  custom_args: CustomArg[];
 }
 
 export interface Settings {
@@ -153,6 +100,7 @@ export interface Settings {
   port: number;
   api_key: string;
   last_model: string;
+  offline: boolean;
 }
 
 export type ServerStatus = 'stopped' | 'starting' | 'running' | 'error';

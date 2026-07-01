@@ -17,6 +17,7 @@
   let apiKey = $state('');
 
   let saveTimer: ReturnType<typeof setTimeout>;
+  let offline = $state(false);
 
   // Sync from store when dialog opens
   $effect(() => {
@@ -27,6 +28,7 @@
       isLight = $settings.theme === 'light';
       port = String($settings.port);
       apiKey = $settings.api_key || '';
+      offline = $settings.offline;
     }
   });
 
@@ -193,6 +195,25 @@
           onCheckedChange={(c) => {
             isLight = c;
             saveSetting('theme', c ? 'light' : 'dark');
+          }}
+        />
+      </div>
+
+      <Separator />
+
+      <div class="flex items-center justify-between">
+        <div>
+          <Label for="offline">Offline mode</Label>
+          <p class="text-xs text-muted-foreground">
+            Force cache-only operation with no network access (--offline)
+          </p>
+        </div>
+        <Switch
+          id="offline"
+          checked={offline}
+          onCheckedChange={(c) => {
+            offline = c;
+            saveSetting('offline', String(c));
           }}
         />
       </div>
