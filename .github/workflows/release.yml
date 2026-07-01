@@ -72,10 +72,9 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp build/llamancher AppDir/usr/bin/
           # Desktop entry
-          printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=llamancher' 'Exec=llamancher' 'Icon=llamancher' 'Categories=Utility;' 'Terminal=false' > AppDir/llamancher.desktop
-          # Icon (256x256 solid PNG via Python)
-          printf '%s\n' 'import struct,zlib;w=h=256;bg=bytes([26,26,46]);raw=b""' 'for _ in range(h):raw+=b"\\x00"+bg*w' 'ihdr=struct.pack(">IIBBBBB",w,h,8,2,0,0,0)' 'idat=zlib.compress(raw)' 'crc=lambda d:struct.pack(">I",zlib.crc32(d)&0xffffffff)' 'ck=lambda t,d:struct.pack(">I",len(d))+t+d+crc(t+d)' 'open("AppDir/llamancher.png","wb").write(b"\\x89PNG\\r\\n\\x1a\\n"+ck(b"IHDR",ihdr)+ck(b"IDAT",idat)+ck(b"IEND",b""))' > /tmp/genicon.py
-          python3 /tmp/genicon.py
+          printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=llamancher' 'Exec=llamancher' 'Icon=llamancher' 'Categories=Utility;' 'Terminal=false' 'StartupWMClass=app.saucer.llamancher' > AppDir/llamancher.desktop
+          # Icon
+          cp assets/llamancher.png AppDir/
           # Bundle shared libraries (WebKitGTK excluded — use system one)
           LINUXDEPLOY_OUTPUT=/dev/null DEPLOY_GTK_VERSION=4 /tmp/linuxdeploy-x86_64/AppRun --appdir AppDir --exclude-library='libwebkitgtk*' --exclude-library='libjavascriptcoregtk*' --plugin gtk
           # Package as AppImage
