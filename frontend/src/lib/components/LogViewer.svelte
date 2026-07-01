@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Terminal, RefreshCw, X } from '@lucide/svelte';
   import { api } from '$lib/saucer';
+  import { t } from '$lib/i18n';
 
   let { open = false, onclose }: { open: boolean; onclose: () => void } = $props();
 
@@ -95,30 +96,30 @@
     <div class="flex items-center justify-between px-3 py-1.5 border-b border-border/50 bg-zinc-900 shrink-0">
       <div class="flex items-center gap-2">
         <Terminal size={14} />
-        <span class="text-[11px] text-green-300 font-medium uppercase tracking-wider">Server Log</span>
+        <span class="text-[11px] text-green-300 font-medium uppercase tracking-wider">{$t('log.title')}</span>
         {#if lines.length > 0}
-          <span class="text-[10px] text-muted-foreground">{lines.length} lines</span>
+          <span class="text-[10px] text-muted-foreground">{$t('log.lines', { n: lines.length })}</span>
         {/if}
       </div>
       <div class="flex items-center gap-1">
         <button
           class="flex items-center justify-center h-6 w-6 rounded hover:bg-white/10 text-green-300/70 hover:text-green-300 transition-colors"
           onclick={copyAll}
-          title="Copy all"
+          title={$t('log.copyAll')}
         >
           <span class="text-[10px]">📋</span>
         </button>
         <button
           class="flex items-center justify-center h-6 w-6 rounded hover:bg-white/10 text-green-300/70 hover:text-green-300 transition-colors"
           onclick={fetchLog}
-          title="Refresh"
+          title={$t('log.refresh')}
         >
           <RefreshCw size={12} />
         </button>
         <button
           class="flex items-center justify-center h-6 w-6 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
           onclick={onclose}
-          title="Close"
+          title={$t('log.close')}
         >
           <X size={14} />
         </button>
@@ -134,7 +135,7 @@
     >
       {#if lines.length === 0}
         <div class="flex items-center justify-center h-full text-muted-foreground text-[11px]">
-          <span>Waiting for server output…</span>
+          <span>{$t('log.waiting')}</span>
         </div>
       {:else}
         {#each lines as line}
@@ -147,9 +148,9 @@
     <div class="flex items-center gap-3 px-3 py-1 border-t border-border/50 bg-zinc-900 text-[10px] text-muted-foreground shrink-0">
       <span class="flex items-center gap-1">
         <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-        {pollTimer ? 'Live' : 'Stopped'}
+        {pollTimer ? $t('log.live') : $t('log.stopped')}
       </span>
-      <span>{autoScroll ? 'Auto-scroll on' : 'Auto-scroll off'}</span>
+      <span>{autoScroll ? $t('log.autoScrollOn') : $t('log.autoScrollOff')}</span>
     </div>
   </div>
 {/if}

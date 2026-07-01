@@ -8,6 +8,7 @@
   import LogViewer from './LogViewer.svelte';
   import ModelSpeculative from './ModelSpeculative.svelte';
 
+  import { t } from '$lib/i18n';
   import { Separator } from '$lib/ui/separator';
   import { Label } from '$lib/ui/label';
   import { Input } from '$lib/ui/input';
@@ -188,7 +189,7 @@
       if (modelName && model?.name === modelName) {
         api.savePreset(modelName, savePayload());
         if ($serverStatus === 'running' && modelDisplayName(model) && $serverModel === modelDisplayName(model)) {
-          toast.info('Changes will apply after restart');
+          toast.info($t('toast.changesApplyRestart'));
         }
       }
     }, 300);
@@ -225,13 +226,13 @@
       if (status.status === 'stopped') {
         const s = get(settings);
         if (!s.llama_server_path) {
-          toast.error('llama-server executable path is not set. Configure it in Settings.');
+          toast.error($t('toast.setPath'));
           return;
         }
         await api.savePreset(model.name, savePayload());
         const result = await api.startServer(model.name, model.path);
         if (result === 'server_not_found') {
-          toast.error('llama-server executable not found. Set the path in Settings.');
+          toast.error($t('toast.serverNotFound'));
           return;
         }
         serverModel.set(modelDisplayName(model));
@@ -242,9 +243,9 @@
         serverModel.set('');
         serverStatus.set('stopped');
       } else {
-        toast.warning('Another model is running', {
+        toast.warning($t('toast.anotherRunning'), {
           action: {
-            label: 'Stop & Start',
+            label: $t('toast.stopAndStart'),
             onClick: async () => {
               await api.stopServer();
               setTimeout(async () => { await api.startServer(model.name, model.path); }, 500);
@@ -252,7 +253,7 @@
           },
         });
       }
-    } catch { toast.error('Server operation failed'); }
+    } catch { toast.error($t('toast.failedOp')); }
     finally { serverLoading = false; }
   }
 
@@ -299,7 +300,7 @@
       </div>
       <div class="flex items-center gap-2 shrink-0">
         <button class="flex items-center justify-center h-8 w-8 rounded-md border border-border bg-secondary hover:bg-accent text-muted-foreground hover:text-foreground transition-colors active:scale-95"
-          onclick={() => logOpen = true} title="Server logs">
+          onclick={() => logOpen = true} title={$t('detail.serverLogs')}>
           <Terminal size={14} />
         </button>
         <ServerButton
@@ -316,38 +317,38 @@
     <div class="rounded-lg border border-border bg-card divide-y divide-border/50 text-xs">
       <!-- Network architecture -->
       <div class="p-3 space-y-1">
-        <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">Параметры сети</h3>
+        <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">{$t('detail.network')}</h3>
         <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
           {#if model.block_count && model.block_count !== '0'}
-            <span class="text-muted-foreground">Layers</span>
+            <span class="text-muted-foreground">{$t('detail.layers')}</span>
             <span class="tabular-nums">{model.block_count}</span>
           {/if}
           {#if model.embedding_length && model.embedding_length !== '0'}
-            <span class="text-muted-foreground">Embedding</span>
+            <span class="text-muted-foreground">{$t('detail.embedding')}</span>
             <span class="tabular-nums">{model.embedding_length}</span>
           {/if}
           {#if model.head_count && model.head_count !== '0'}
-            <span class="text-muted-foreground">Heads</span>
+            <span class="text-muted-foreground">{$t('detail.heads')}</span>
             <span class="tabular-nums">{model.head_count}</span>
           {/if}
           {#if model.head_count_kv && model.head_count_kv !== '0'}
-            <span class="text-muted-foreground">KV Heads</span>
+            <span class="text-muted-foreground">{$t('detail.kvHeads')}</span>
             <span class="tabular-nums">{model.head_count_kv}</span>
           {/if}
           {#if model.feed_forward_length && model.feed_forward_length !== '0'}
-            <span class="text-muted-foreground">FF Length</span>
+            <span class="text-muted-foreground">{$t('detail.ffLength')}</span>
             <span class="tabular-nums">{model.feed_forward_length}</span>
           {/if}
           {#if model.vocab_size && model.vocab_size !== '0'}
-            <span class="text-muted-foreground">Vocab Size</span>
+            <span class="text-muted-foreground">{$t('detail.vocab')}</span>
             <span class="tabular-nums">{model.vocab_size}</span>
           {/if}
           {#if model.expert_count && model.expert_count !== '0'}
-            <span class="text-muted-foreground">Experts</span>
+            <span class="text-muted-foreground">{$t('detail.experts')}</span>
             <span class="tabular-nums">{model.expert_count}{#if model.expert_used_count && model.expert_used_count !== '0'}/{model.expert_used_count}{/if}</span>
           {/if}
           {#if model.context_length && model.context_length !== '0'}
-            <span class="text-muted-foreground">Context</span>
+            <span class="text-muted-foreground">{$t('detail.context')}</span>
             <span class="tabular-nums">{model.context_length}</span>
           {/if}
         </div>
@@ -355,7 +356,7 @@
 
       <!-- File -->
       <div class="p-3 space-y-1">
-        <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">Файл</h3>
+        <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">{$t('detail.file')}</h3>
         <div class="font-mono text-[11px] truncate text-muted-foreground" title={model.path}>
           {model.path || '—'}
         </div>
@@ -370,18 +371,18 @@
       <!-- Source -->
       {#if model.author || model.license || model.version || model.url || model.source_url || model.languages}
       <div class="p-3 space-y-1">
-        <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">Источник</h3>
+        <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">{$t('detail.source')}</h3>
         {#if model.author}
-          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">Author</span>{model.author}</div>
+          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">{$t('detail.author')}</span>{model.author}</div>
         {/if}
         {#if model.license}
-          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">License</span>{model.license}</div>
+          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">{$t('detail.license')}</span>{model.license}</div>
         {/if}
         {#if model.version}
-          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">Version</span>{model.version}</div>
+          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">{$t('detail.version')}</span>{model.version}</div>
         {/if}
         {#if model.languages}
-          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">Languages</span>{model.languages}</div>
+          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">{$t('detail.languages')}</span>{model.languages}</div>
         {/if}
         {#if model.source_url || model.url}
           <a href={model.source_url || model.url} target="_blank" rel="noopener noreferrer"
@@ -402,7 +403,7 @@
           title="View chat template"
         >
           <Eye size={12} />
-          <span>View chat template</span>
+          <span>{$t('detail.viewChatTemplate')}</span>
         </button>
       </div>
       {/if}
@@ -415,13 +416,13 @@
     <!-- ============================================================ -->
     {#if !hideSampling}
     <div class="[contain:layout]">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">Генерация</h3>
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">{$t('detail.section.gen')}</h3>
 
       <!-- Temperature -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="temp" class="text-sm">Temperature <span class="font-mono text-[10px] text-muted-foreground">--temp</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Креативность выборки (0 = детерминированно)</p>
+          <Label for="temp" class="text-sm">{$t('detail.field.temp')} <span class="font-mono text-[10px] text-muted-foreground">--temp</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.temp.desc')}</p>
         </div>
         <div class="flex items-center gap-2 w-48 shrink-0">
           <Slider id="temp" type="single" value={preset.temp}
@@ -434,8 +435,8 @@
       <!-- Context Size -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="ctx_size" class="text-sm">Context Size <span class="font-mono text-[10px] text-muted-foreground">-c, --ctx-size</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Размер контекстного окна в токенах</p>
+          <Label for="ctx_size" class="text-sm">{$t('detail.field.ctxSize')} <span class="font-mono text-[10px] text-muted-foreground">-c, --ctx-size</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.ctxSize.desc')}</p>
         </div>
         <div class="flex items-center gap-2 w-48 shrink-0">
           <Slider id="ctx_size" type="single" value={preset.ctx_size}
@@ -448,8 +449,8 @@
       <!-- Predict -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="predict" class="text-sm">Max Tokens <span class="font-mono text-[10px] text-muted-foreground">-n, --predict</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Максимум токенов генерации (-1 = без лимита)</p>
+          <Label for="predict" class="text-sm">{$t('detail.field.predict')} <span class="font-mono text-[10px] text-muted-foreground">-n, --predict</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.predict.desc')}</p>
         </div>
         <Input id="predict" type="number" class="w-36" value={String(preset.predict)}
           oninput={(e) => { preset.predict = parseInt(e.currentTarget.value) || -1; debouncedSave(); }} />
@@ -458,8 +459,8 @@
       <!-- Min-P -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="min_p" class="text-sm">Min P <span class="font-mono text-[10px] text-muted-foreground">--min-p</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Минимальная вероятность токена</p>
+          <Label for="min_p" class="text-sm">{$t('detail.field.minP')} <span class="font-mono text-[10px] text-muted-foreground">--min-p</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.minP.desc')}</p>
         </div>
         <div class="flex items-center gap-2 w-48 shrink-0">
           <Slider id="min_p" type="single" value={preset.min_p}
@@ -472,8 +473,8 @@
       <!-- Top-K -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="top_k" class="text-sm">Top K <span class="font-mono text-[10px] text-muted-foreground">--top-k</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Top-k sampling (0 = отключено)</p>
+          <Label for="top_k" class="text-sm">{$t('detail.field.topK')} <span class="font-mono text-[10px] text-muted-foreground">--top-k</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.topK.desc')}</p>
         </div>
         <Input id="top_k" type="number" class="w-36" value={String(preset.top_k)}
           oninput={(e) => { preset.top_k = parseInt(e.currentTarget.value) || 40; debouncedSave(); }} />
@@ -482,8 +483,8 @@
       <!-- Top-P -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="top_p" class="text-sm">Top P <span class="font-mono text-[10px] text-muted-foreground">--top-p</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Nucleus sampling (кумулятивная вероятность)</p>
+          <Label for="top_p" class="text-sm">{$t('detail.field.topP')} <span class="font-mono text-[10px] text-muted-foreground">--top-p</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.topP.desc')}</p>
         </div>
         <div class="flex items-center gap-2 w-48 shrink-0">
           <Slider id="top_p" type="single" value={preset.top_p}
@@ -496,8 +497,8 @@
       <!-- Repeat Penalty -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="repeat_penalty" class="text-sm">Repeat Penalty <span class="font-mono text-[10px] text-muted-foreground">--repeat-penalty</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Штраф за повторения (1.0 = выключен)</p>
+          <Label for="repeat_penalty" class="text-sm">{$t('detail.field.repeatPenalty')} <span class="font-mono text-[10px] text-muted-foreground">--repeat-penalty</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.repeatPenalty.desc')}</p>
         </div>
         <div class="flex items-center gap-2 w-48 shrink-0">
           <Slider id="repeat_penalty" type="single" value={preset.repeat_penalty}
@@ -510,8 +511,8 @@
       <!-- Presence Penalty -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="presence_penalty" class="text-sm">Presence Penalty <span class="font-mono text-[10px] text-muted-foreground">--presence-penalty</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Штраф за появление новых токенов</p>
+          <Label for="presence_penalty" class="text-sm">{$t('detail.field.presencePenalty')} <span class="font-mono text-[10px] text-muted-foreground">--presence-penalty</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.presencePenalty.desc')}</p>
         </div>
         <Input id="presence_penalty" type="number" step="0.01" class="w-36" value={String(preset.presence_penalty)}
           oninput={(e) => { preset.presence_penalty = parseFloat(e.currentTarget.value) || 0; debouncedSave(); }} />
@@ -520,8 +521,8 @@
       <!-- Frequency Penalty -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="frequency_penalty" class="text-sm">Frequency Penalty <span class="font-mono text-[10px] text-muted-foreground">--frequency-penalty</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Штраф за частоту токенов</p>
+          <Label for="frequency_penalty" class="text-sm">{$t('detail.field.frequencyPenalty')} <span class="font-mono text-[10px] text-muted-foreground">--frequency-penalty</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.frequencyPenalty.desc')}</p>
         </div>
         <Input id="frequency_penalty" type="number" step="0.01" class="w-36" value={String(preset.frequency_penalty)}
           oninput={(e) => { preset.frequency_penalty = parseFloat(e.currentTarget.value) || 0; debouncedSave(); }} />
@@ -530,8 +531,8 @@
       <!-- Reasoning Mode -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="reasoning_mode" class="text-sm">Reasoning Mode <span class="font-mono text-[10px] text-muted-foreground">-rea, --reasoning</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Режим chain-of-thought</p>
+          <Label for="reasoning_mode" class="text-sm">{$t('detail.field.reasoning')} <span class="font-mono text-[10px] text-muted-foreground">-rea, --reasoning</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.reasoning.desc')}</p>
         </div>
         <Switch checked={preset.reasoning_mode} onCheckedChange={(c) => { preset.reasoning_mode = c; debouncedSave(); }} />
       </div>
@@ -539,8 +540,8 @@
       {#if preset.reasoning_mode}
       <div class="flex items-center justify-between gap-4 py-1.5 pl-4">
         <div class="min-w-0">
-          <Label for="reasoning_budget" class="text-sm">Reasoning Budget <span class="font-mono text-[10px] text-muted-foreground">--reasoning-budget</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Максимум токенов для reasoning (0 = без ограничения)</p>
+          <Label for="reasoning_budget" class="text-sm">{$t('detail.field.reasoningBudget')} <span class="font-mono text-[10px] text-muted-foreground">--reasoning-budget</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.reasoningBudget.desc')}</p>
         </div>
         <Input id="reasoning_budget" type="number" class="w-36" value={String(preset.reasoning_budget)}
           oninput={(e) => { preset.reasoning_budget = parseInt(e.currentTarget.value) || 0; debouncedSave(); }} />
@@ -550,8 +551,8 @@
       <!-- Seed -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="seed" class="text-sm">Seed <span class="font-mono text-[10px] text-muted-foreground">-s, --seed</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Зерно RNG (-1 = случайно)</p>
+          <Label for="seed" class="text-sm">{$t('detail.field.seed')} <span class="font-mono text-[10px] text-muted-foreground">-s, --seed</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.seed.desc')}</p>
         </div>
         <Input id="seed" type="number" placeholder="-1" class="w-36" value={String(preset.seed)}
           oninput={(e) => { preset.seed = parseInt(e.currentTarget.value) || -1; debouncedSave(); }} />
@@ -564,13 +565,13 @@
     <!-- Производительность                                           -->
     <!-- ============================================================ -->
     <div class="[contain:layout]">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">Производительность</h3>
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">{$t('detail.section.perf')}</h3>
 
       <!-- Threads -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="threads" class="text-sm">Threads <span class="font-mono text-[10px] text-muted-foreground">-t, --threads</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Потоков CPU (ядер: {nCores})</p>
+          <Label for="threads" class="text-sm">{$t('detail.field.threads')} <span class="font-mono text-[10px] text-muted-foreground">-t, --threads</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.threads.desc', { n: nCores })}</p>
         </div>
         <div class="flex items-center gap-2 w-44 shrink-0">
           <Slider id="threads" type="single" value={preset.threads}
@@ -583,8 +584,8 @@
       <!-- Batch Threads -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="threads_batch" class="text-sm">Batch Threads <span class="font-mono text-[10px] text-muted-foreground">-tb, --threads-batch</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Потоков для batch-обработки (0 = auto)</p>
+          <Label for="threads_batch" class="text-sm">{$t('detail.field.threadsBatch')} <span class="font-mono text-[10px] text-muted-foreground">-tb, --threads-batch</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.threadsBatch.desc')}</p>
         </div>
         <Input id="threads_batch" type="number" min="0" class="w-36" value={String(preset.threads_batch)}
           oninput={(e) => { preset.threads_batch = parseInt(e.currentTarget.value) || 0; debouncedSave(); }} />
@@ -593,8 +594,8 @@
       <!-- GPU Layers -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="gpu_layers" class="text-sm">GPU Layers <span class="font-mono text-[10px] text-muted-foreground">-ngl, --gpu-layers</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Слоёв на GPU (0 = auto, 100+ = all)</p>
+          <Label for="gpu_layers" class="text-sm">{$t('detail.field.gpuLayers')} <span class="font-mono text-[10px] text-muted-foreground">-ngl, --gpu-layers</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.gpuLayers.desc')}</p>
         </div>
         <div class="flex items-center gap-2 w-44 shrink-0">
           <Slider id="gpu_layers" type="single" value={preset.gpu_layers}
@@ -609,8 +610,8 @@
       <!-- Batch Size -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="batch_size" class="text-sm">Batch Size <span class="font-mono text-[10px] text-muted-foreground">-b, --batch-size</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Логический максимум батча</p>
+          <Label for="batch_size" class="text-sm">{$t('detail.field.batchSize')} <span class="font-mono text-[10px] text-muted-foreground">-b, --batch-size</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.batchSize.desc')}</p>
         </div>
         <Input id="batch_size" type="number" class="w-36" value={String(preset.batch_size)}
           oninput={(e) => { preset.batch_size = parseInt(e.currentTarget.value) || 2048; debouncedSave(); }} />
@@ -619,8 +620,8 @@
       <!-- UBatch Size -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="ubatch_size" class="text-sm">UBatch Size <span class="font-mono text-[10px] text-muted-foreground">-ub, --ubatch-size</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Физический максимум батча</p>
+          <Label for="ubatch_size" class="text-sm">{$t('detail.field.ubatchSize')} <span class="font-mono text-[10px] text-muted-foreground">-ub, --ubatch-size</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.ubatchSize.desc')}</p>
         </div>
         <Input id="ubatch_size" type="number" class="w-36" value={String(preset.ubatch_size)}
           oninput={(e) => { preset.ubatch_size = parseInt(e.currentTarget.value) || 512; debouncedSave(); }} />
@@ -629,8 +630,8 @@
       <!-- Parallel Slots -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="parallel" class="text-sm">Parallel Slots <span class="font-mono text-[10px] text-muted-foreground">-np, --parallel</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Количество слотов для параллельных запросов</p>
+          <Label for="parallel" class="text-sm">{$t('detail.field.parallel')} <span class="font-mono text-[10px] text-muted-foreground">-np, --parallel</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.parallel.desc')}</p>
         </div>
         <Input id="parallel" type="number" min="1" class="w-36" value={String(preset.parallel)}
           oninput={(e) => { preset.parallel = parseInt(e.currentTarget.value) || 1; debouncedSave(); }} />
@@ -639,8 +640,8 @@
       <!-- Timeout -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="timeout" class="text-sm">Timeout <span class="font-mono text-[10px] text-muted-foreground">-to, --timeout</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Таймаут сервера в секундах (0 = выключен)</p>
+          <Label for="timeout" class="text-sm">{$t('detail.field.timeout')} <span class="font-mono text-[10px] text-muted-foreground">-to, --timeout</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.timeout.desc')}</p>
         </div>
         <Input id="timeout" type="number" min="0" class="w-36" value={String(preset.timeout)}
           oninput={(e) => { preset.timeout = parseInt(e.currentTarget.value) || 0; debouncedSave(); }} />
@@ -649,8 +650,8 @@
       <!-- Flash Attention -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="flash_attn" class="text-sm">Flash Attention <span class="font-mono text-[10px] text-muted-foreground">-fa, --flash-attn</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Ускорение и экономия VRAM</p>
+          <Label for="flash_attn" class="text-sm">{$t('detail.field.flashAttn')} <span class="font-mono text-[10px] text-muted-foreground">-fa, --flash-attn</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.flashAttn.desc')}</p>
         </div>
         <Switch checked={preset.flash_attn} onCheckedChange={(c) => { preset.flash_attn = c; debouncedSave(); }} />
       </div>
@@ -658,8 +659,8 @@
       <!-- Memory Lock -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="mlock" class="text-sm">Memory Lock <span class="font-mono text-[10px] text-muted-foreground">--mlock</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Зафиксировать модель в RAM без свопа</p>
+          <Label for="mlock" class="text-sm">{$t('detail.field.mlock')} <span class="font-mono text-[10px] text-muted-foreground">--mlock</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.mlock.desc')}</p>
         </div>
         <Switch checked={preset.mlock} onCheckedChange={(c) => { preset.mlock = c; debouncedSave(); }} />
       </div>
@@ -667,11 +668,11 @@
       <!-- Memory Mapping -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="mmap" class="text-sm">Memory Map (mmap) <span class="font-mono text-[10px] text-muted-foreground">--mmap / --no-mmap</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Memory-map модели (рекомендуется с mlock)</p>
+          <Label for="mmap" class="text-sm">{$t('detail.field.mmap')} <span class="font-mono text-[10px] text-muted-foreground">--mmap / --no-mmap</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.mmap.desc')}</p>
         </div>
         <Switch checked={!preset.no_mmap} onCheckedChange={(c) => { preset.no_mmap = !c; debouncedSave(); }}
-          title={preset.no_mmap ? 'mmap выключен (--no-mmap)' : 'mmap включён (--mmap)'} />
+          title={preset.no_mmap ? $t('detail.field.mmap.off') : $t('detail.field.mmap.on')} />
       </div>
     </div>
     <Separator />
@@ -680,13 +681,13 @@
     <!-- KV Cache                                                     -->
     <!-- ============================================================ -->
     <div class="[contain:layout]">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">KV Cache</h3>
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">{$t('detail.section.kv')}</h3>
 
       <!-- Cache Type K -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="cache_type_k" class="text-sm">Cache Type K <span class="font-mono text-[10px] text-muted-foreground">-ctk, --cache-type-k</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Тип данных KV кэша для K</p>
+          <Label for="cache_type_k" class="text-sm">{$t('detail.field.cacheTypeK')} <span class="font-mono text-[10px] text-muted-foreground">-ctk, --cache-type-k</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.cacheTypeK.desc')}</p>
         </div>
         <NativeSelect id="cache_type_k" class="w-36" value={preset.cache_type_k} onchange={(e) => { preset.cache_type_k = e.currentTarget.value; debouncedSave(); }}>
           <NativeSelectOption value="">Default (f16)</NativeSelectOption>
@@ -700,8 +701,8 @@
       <!-- Cache Type V -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="cache_type_v" class="text-sm">Cache Type V <span class="font-mono text-[10px] text-muted-foreground">-ctv, --cache-type-v</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Тип данных KV кэша для V</p>
+          <Label for="cache_type_v" class="text-sm">{$t('detail.field.cacheTypeV')} <span class="font-mono text-[10px] text-muted-foreground">-ctv, --cache-type-v</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.cacheTypeV.desc')}</p>
         </div>
         <NativeSelect id="cache_type_v" class="w-36" value={preset.cache_type_v} onchange={(e) => { preset.cache_type_v = e.currentTarget.value; debouncedSave(); }}>
           <NativeSelectOption value="">Default (f16)</NativeSelectOption>
@@ -718,20 +719,20 @@
     <!-- Мультимодальность                                            -->
     <!-- ============================================================ -->
     <div class="[contain:layout]">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">Мультимодальность</h3>
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">{$t('detail.section.mm')}</h3>
 
       <!-- MMProj -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="mmproj" class="text-sm">MMProj <span class="font-mono text-[10px] text-muted-foreground">-mm, --mmproj</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Файл мультимодального проектора</p>
+          <Label for="mmproj" class="text-sm">{$t('detail.field.mmproj')} <span class="font-mono text-[10px] text-muted-foreground">-mm, --mmproj</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.mmproj.desc')}</p>
         </div>
         <div class="flex items-center gap-2">
           <Input id="mmproj" placeholder="/path/to/mmproj.gguf" class="w-28" value={preset.mmproj}
             oninput={(e) => { preset.mmproj = e.currentTarget.value; debouncedSave(); }} />
           <Button variant="outline" size="sm"
             onclick={async () => { const p = await api.pickFile(); if (p) { preset.mmproj = p; debouncedSave(); } }}>
-            Browse
+            {$t('settings.browse')}
           </Button>
         </div>
       </div>
@@ -742,13 +743,13 @@
     <!-- Дополнительно                                                -->
     <!-- ============================================================ -->
     <div class="[contain:layout]">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">Дополнительно</h3>
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">{$t('detail.section.extra')}</h3>
 
       <!-- Alias -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="alias" class="text-sm">Alias <span class="font-mono text-[10px] text-muted-foreground">-a, --alias</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Псевдоним модели для /api/... именования</p>
+          <Label for="alias" class="text-sm">{$t('detail.field.alias')} <span class="font-mono text-[10px] text-muted-foreground">-a, --alias</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.alias.desc')}</p>
         </div>
         <Input id="alias" placeholder="my-model" class="w-36" value={preset.alias}
           oninput={(e) => { preset.alias = e.currentTarget.value; debouncedSave(); }} />
@@ -757,8 +758,8 @@
       <!-- Continuous Batching -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="cont_batching" class="text-sm">Continuous Batching <span class="font-mono text-[10px] text-muted-foreground">-cb, --cont-batching</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Непрерывный батчинг запросов</p>
+          <Label for="cont_batching" class="text-sm">{$t('detail.field.contBatching')} <span class="font-mono text-[10px] text-muted-foreground">-cb, --cont-batching</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.contBatching.desc')}</p>
         </div>
         <Switch checked={preset.cont_batching} onCheckedChange={(c) => { preset.cont_batching = c; debouncedSave(); }} />
       </div>
@@ -766,8 +767,8 @@
       <!-- WebUI -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="webui" class="text-sm">WebUI <span class="font-mono text-[10px] text-muted-foreground">--webui</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Встроенный веб-интерфейс llama-server</p>
+          <Label for="webui" class="text-sm">{$t('detail.field.webui')} <span class="font-mono text-[10px] text-muted-foreground">--webui</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.webui.desc')}</p>
         </div>
         <Switch checked={preset.webui} onCheckedChange={(c) => { preset.webui = c; debouncedSave(); }} />
       </div>
@@ -775,8 +776,8 @@
       <!-- Embedding Mode -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="embedding" class="text-sm">Embedding Mode <span class="font-mono text-[10px] text-muted-foreground">--embedding</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Режим эмбеддингов (скрывает параметры генерации)</p>
+          <Label for="embedding" class="text-sm">{$t('detail.field.embedding')} <span class="font-mono text-[10px] text-muted-foreground">--embedding</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.embedding.desc')}</p>
         </div>
         <Switch checked={preset.embedding} onCheckedChange={(c) => { preset.embedding = c; debouncedSave(); }} />
       </div>
@@ -784,8 +785,8 @@
       <!-- Slots Management -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="slots" class="text-sm">Slots <span class="font-mono text-[10px] text-muted-foreground">--slots</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Управление слотами параллельных запросов</p>
+          <Label for="slots" class="text-sm">{$t('detail.field.slots')} <span class="font-mono text-[10px] text-muted-foreground">--slots</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.slots.desc')}</p>
         </div>
         <Switch checked={preset.slots} onCheckedChange={(c) => { preset.slots = c; debouncedSave(); }} />
       </div>
@@ -793,8 +794,8 @@
       <!-- Metrics -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="metrics" class="text-sm">Metrics <span class="font-mono text-[10px] text-muted-foreground">--metrics</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Эндпоинт /metrics для Prometheus</p>
+          <Label for="metrics" class="text-sm">{$t('detail.field.metrics')} <span class="font-mono text-[10px] text-muted-foreground">--metrics</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.metrics.desc')}</p>
         </div>
         <Switch checked={preset.metrics} onCheckedChange={(c) => { preset.metrics = c; debouncedSave(); }} />
       </div>
@@ -802,8 +803,8 @@
       <!-- Cache Prompt -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="cache_prompt" class="text-sm">Cache Prompt <span class="font-mono text-[10px] text-muted-foreground">--cache-prompt</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Кэширование системного промпта</p>
+          <Label for="cache_prompt" class="text-sm">{$t('detail.field.cachePrompt')} <span class="font-mono text-[10px] text-muted-foreground">--cache-prompt</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.cachePrompt.desc')}</p>
         </div>
         <Switch checked={preset.cache_prompt} onCheckedChange={(c) => { preset.cache_prompt = c; debouncedSave(); }} />
       </div>
@@ -811,8 +812,8 @@
       <!-- Context Shift -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="context_shift" class="text-sm">Context Shift <span class="font-mono text-[10px] text-muted-foreground">--context-shift</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Автоматический сдвиг контекста</p>
+          <Label for="context_shift" class="text-sm">{$t('detail.field.contextShift')} <span class="font-mono text-[10px] text-muted-foreground">--context-shift</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.contextShift.desc')}</p>
         </div>
         <Switch checked={preset.context_shift} onCheckedChange={(c) => { preset.context_shift = c; debouncedSave(); }} />
       </div>
@@ -820,8 +821,8 @@
       <!-- Offline Mode -->
       <div class="flex items-center justify-between gap-4 py-1.5">
         <div class="min-w-0">
-          <Label for="offline_model" class="text-sm">Offline Mode <span class="font-mono text-[10px] text-muted-foreground">--offline</span></Label>
-          <p class="text-[11px] leading-tight text-muted-foreground">Force cache-only operation with no network access</p>
+          <Label for="offline_model" class="text-sm">{$t('detail.field.offline')} <span class="font-mono text-[10px] text-muted-foreground">{$t('detail.field.offlineFlag')}</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.offline.desc')}</p>
         </div>
         <Switch
           id="offline_model"
@@ -836,7 +837,7 @@
     <!-- Speculative Decoding                                         -->
     <!-- ============================================================ -->
     <div class="[contain:layout]">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">Спекулятивное декодирование</h3>
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">{$t('detail.section.spec')}</h3>
       <ModelSpeculative {preset} {debouncedSave} />
     </div>
     <Separator />
