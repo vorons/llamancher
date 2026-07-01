@@ -61,18 +61,10 @@ export const api = {
   get readLog() {
     return getApi<string[]>('read_log');
   },
-  get pickGrammarFile() {
-    return getApi<string | null>('pick_grammar_file');
-  },
-  get setWindowTitle() {
-    return getApi<void>('set_window_title');
-  },
+
 };
 
 export function onServerStatus(cb: (status: string) => void) {
   w.__onServerStatus = cb;
 }
 
-export function isSaucer(): boolean {
-  return !!w.saucer;
-}

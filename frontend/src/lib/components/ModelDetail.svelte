@@ -27,7 +27,7 @@
     spec_type: '', draft_model: '', hf_repo_draft: '', draft_gpu_layers: 0,
     spec_draft_n_max: 16, spec_draft_n_min: 0, spec_draft_p_split: 0.50, spec_draft_p_min: 0.0,
     cont_batching: true, webui: true, embedding: false, slots: true,
-    metrics: false, cache_prompt: true, context_shift: true, alias: '',
+    metrics: false, cache_prompt: true, context_shift: true, offline: false, alias: '',
     custom_args: [],
   });
 
@@ -67,7 +67,6 @@
 
   const modelMaxCtx = $derived(Math.max(512, pf(model?.context_length, 131072)));
   const hideSampling = $derived(preset.embedding);
-  const isDraftMode = $derived(preset.spec_type === 'draft-model' || preset.spec_type === 'draft-mtp');
   const nCores = navigator.hardwareConcurrency || 4;
 
   $effect(() => {
@@ -117,6 +116,7 @@
           metrics: kv.metrics === 'true',
           cache_prompt: kv.cache_prompt !== 'false',
           context_shift: kv.context_shift !== 'false',
+          offline: kv.offline === 'true',
           alias: kv.alias || '',
           custom_args: parseCustomArgs(kv.custom_args),
         };
@@ -175,6 +175,7 @@
       metrics: preset.metrics ? 'true' : 'false',
       cache_prompt: preset.cache_prompt ? 'true' : 'false',
       context_shift: preset.context_shift ? 'true' : 'false',
+      offline: preset.offline ? 'true' : 'false',
       alias: preset.alias,
       custom_args: JSON.stringify(preset.custom_args),
     };
@@ -814,6 +815,19 @@
           <p class="text-[11px] leading-tight text-muted-foreground">Автоматический сдвиг контекста</p>
         </div>
         <Switch checked={preset.context_shift} onCheckedChange={(c) => { preset.context_shift = c; debouncedSave(); }} />
+      </div>
+
+      <!-- Offline Mode -->
+      <div class="flex items-center justify-between gap-4 py-1.5">
+        <div class="min-w-0">
+          <Label for="offline_model" class="text-sm">Offline Mode <span class="font-mono text-[10px] text-muted-foreground">--offline</span></Label>
+          <p class="text-[11px] leading-tight text-muted-foreground">Force cache-only operation with no network access</p>
+        </div>
+        <Switch
+          id="offline_model"
+          checked={preset.offline}
+          onCheckedChange={(c) => { preset.offline = c; debouncedSave(); }}
+        />
       </div>
     </div>
     <Separator />

@@ -86,6 +86,7 @@ export interface Preset {
   metrics: boolean;
   cache_prompt: boolean;
   context_shift: boolean;
+  offline: boolean;
   alias: string;
 
   // ─── Custom CLI args ────────────────
@@ -100,12 +101,7 @@ export interface Settings {
   port: number;
   api_key: string;
   last_model: string;
-  offline: boolean;
 }
 
 export type ServerStatus = 'stopped' | 'starting' | 'running' | 'error';
 
-export interface ServerStatusInfo {
-  status: ServerStatus;
-  model: string;
-}
