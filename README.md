@@ -134,59 +134,57 @@ cmake --build build --preset debug     # debug (fast iteration)
 
 **`~/.llamancher/models/<name>.preset.json`** — on first scan, the preset is auto-populated with GGUF metadata. On subsequent scans, metadata is refreshed.
 
-```json
+```jsonc
 {
-  "ctx_size": 4096,
-  "threads": 8,
-  "gpu_layers": 35,
-  "tensor_split": "",
-  "numa": "",
-  "split_mode": "",
-  "main_gpu": -1,
-  "device": "",
-  "mlock": true,
-  "no_mmap": false,
+  // ─── Performance ────────────────────
+  "ctx_size": 2048,
+  "threads": 4,
+  "threads_batch": 0,
+  "gpu_layers": 0,
   "batch_size": 2048,
   "ubatch_size": 512,
-  "cache_type_k": "",
-  "cache_type_v": "",
-  "flash_attn": true,
-  "defrag_thold": -1,
-  "samplers": "",
-  "seed": -1,
-  "temp": 0.8,
+  "flash_attn": false,
+  "mlock": false,
+  "no_mmap": false,
+  "parallel": 1,
+  "timeout": 0,
+
+  // ─── Generation ─────────────────────
+  "temp": 0.80,
+  "predict": -1,
+  "min_p": 0.05,
   "top_k": 40,
   "top_p": 0.95,
-  "min_p": 0.05,
-  "repeat_penalty": 1.0,
-  "presence_penalty": 0.0,
-  "frequency_penalty": 0.0,
-  "mirostat": 0,
-  "parallel": 1,
-  "no_repack": false,
-  "verbose": false,
-  "verbosity": 0,
-  "log_file": "",
-  "spec_type": "",
-  "spec_draft_n_max": 16,
-  "spec_draft_n_min": 0,
-  "spec_draft_p_split": 0.5,
-  "draft_model": "",
-  "draft_gpu_layers": 0,
-  "threads_draft": 0,
-  "threads_batch_draft": 0,
-  "spec_draft_poll": false,
-  "fit": true,
-  "fit_target_mib": "",
-  "fit_ctx": 4096,
+  "repeat_penalty": 1.00,
+  "presence_penalty": 0.00,
+  "frequency_penalty": 0.00,
+  "reasoning_mode": false,
+  "reasoning_budget": 0,
+  "seed": -1,
+
+  // ─── KV Cache ───────────────────────
+  "cache_type_k": "",
+  "cache_type_v": "",
+
+  // ─── Multimodal ─────────────────────
+  "mmproj": "",
+
+  // ─── Extra ──────────────────────────
+  "alias": "",
+  "cont_batching": true,
+  "webui": true,
+  "embedding": false,
+  "slots": true,
+  "metrics": false,
+  "cache_prompt": true,
+  "context_shift": true,
+  "offline": false,
+
+  // ─── GGUF metadata (read-only) ─────
   "display_name": "Qwen2.5-7B-Instruct",
   "size_label": "7B",
   "license": "apache-2.0",
   "author": "Qwen",
-  "version": "",
-  "url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct",
-  "source_url": "",
-  "languages": "en,zh",
   "vocab_size": 152064,
   "embedding_length": 3584,
   "feed_forward_length": 18944,
@@ -194,18 +192,10 @@ cmake --build build --preset debug     # debug (fast iteration)
   "head_count_kv": 4,
   "expert_count": 0,
   "expert_used_count": 0,
-  "tokenizer_model": "gpt2",
-  "bos_token_id": 151643,
-  "eos_token_id": 151643,
-  "chat_template": "{% for message in messages %}{{'<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>' + '\\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\\n' }}{% endif %}",
-  "chat_templates": "chatml,jinja",
+  "context_length": 131072,
+  "chat_template": "{% for message in messages %}...",
   "has_vision": false,
-  "has_audio": false,
-  "sample_temp": 0.7,
-  "sample_top_k": 20,
-  "sample_top_p": 0.8,
-  "sample_min_p": 0.0,
-  "sample_mirostat": 0
+  "has_audio": false
 }
 ```
 
@@ -215,16 +205,13 @@ Editor sections on the model detail screen:
 
 | Section | Parameters |
 |---------|------------|
-| **Basic** | Context Size, Threads |
-| **Model & Loading** | GPU Layers (+All), Tensor Split, NUMA, Split Mode, Main GPU, Devices, mlock, no_mmap |
-| **Context & Cache** | Batch Size, UBatch Size, Cache Type K/V, Flash Attention, Defrag Threshold |
-| **Sampling** | Samplers order, Seed, Temperature, Top-K, Top-P, Min-P, Repeat/Presence/Frequency Penalty, Mirostat |
-| **Server** | Parallel Slots, No Repack |
-| **Logging** | Verbose, Verbosity, Log File |
-| **Speculative Decoding** | Spec Type, Draft N Max/Min, P Split, Draft Model, Draft GPU Layers, Draft Threads, Draft Polling |
-| **Auto-fit** | Fit on/off, Fit Target, Fit Min Ctx |
-
-Most sections are collapsed by default — they expand on click.
+| **Generation** | Temperature (`--temp`), Context Size (`-c`), Max Tokens (`-n`), Min-P, Top-K, Top-P, Repeat/Presence/Frequency Penalty, Reasoning Mode/Budget, Seed |
+| **Performance** | Threads (`-t`), Batch Threads (`-tb`), GPU Layers (`-ngl`), Batch Size (`-b`), UBatch Size (`-ub`), Parallel Slots (`-np`), Timeout (`-to`), Flash Attention (`-fa`), mlock, no-mmap |
+| **KV Cache** | Cache Type K (`-ctk`), Cache Type V (`-ctv`) |
+| **Multimodal** | MMProj (`-mm`) — project file for vision models |
+| **Extra** | Alias (`-a`), Continuous Batching (`-cb`), WebUI, Embedding, Slots, Metrics, Cache Prompt, Context Shift, Offline Mode |
+| **Speculative Decoding** | Spec Type, Draft Model, HF Repo, Draft GPU Layers, Draft N Max/Min, P Split/Range |
+| **Custom CLI Arguments** | Free-form `--flag=value` list with per-item toggle |
 
 ## Technical notes
 
