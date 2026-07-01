@@ -318,38 +318,54 @@
       <!-- Network architecture -->
       <div class="p-3 space-y-1">
         <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">{$t('detail.network')}</h3>
-        <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-1">
           {#if model.block_count && model.block_count !== '0'}
-            <span class="text-muted-foreground">{$t('detail.layers')}</span>
-            <span class="tabular-nums">{model.block_count}</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-muted-foreground text-[11px] shrink-0">{$t('detail.layers')}</span>
+              <span class="tabular-nums font-medium">{model.block_count}</span>
+            </div>
           {/if}
           {#if model.embedding_length && model.embedding_length !== '0'}
-            <span class="text-muted-foreground">{$t('detail.embedding')}</span>
-            <span class="tabular-nums">{model.embedding_length}</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-muted-foreground text-[11px] shrink-0">{$t('detail.embedding')}</span>
+              <span class="tabular-nums font-medium">{model.embedding_length}</span>
+            </div>
           {/if}
           {#if model.head_count && model.head_count !== '0'}
-            <span class="text-muted-foreground">{$t('detail.heads')}</span>
-            <span class="tabular-nums">{model.head_count}</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-muted-foreground text-[11px] shrink-0">{$t('detail.heads')}</span>
+              <span class="tabular-nums font-medium">{model.head_count}</span>
+            </div>
           {/if}
           {#if model.head_count_kv && model.head_count_kv !== '0'}
-            <span class="text-muted-foreground">{$t('detail.kvHeads')}</span>
-            <span class="tabular-nums">{model.head_count_kv}</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-muted-foreground text-[11px] shrink-0">{$t('detail.kvHeads')}</span>
+              <span class="tabular-nums font-medium">{model.head_count_kv}</span>
+            </div>
           {/if}
           {#if model.feed_forward_length && model.feed_forward_length !== '0'}
-            <span class="text-muted-foreground">{$t('detail.ffLength')}</span>
-            <span class="tabular-nums">{model.feed_forward_length}</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-muted-foreground text-[11px] shrink-0">{$t('detail.ffLength')}</span>
+              <span class="tabular-nums font-medium">{model.feed_forward_length}</span>
+            </div>
           {/if}
           {#if model.vocab_size && model.vocab_size !== '0'}
-            <span class="text-muted-foreground">{$t('detail.vocab')}</span>
-            <span class="tabular-nums">{model.vocab_size}</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-muted-foreground text-[11px] shrink-0">{$t('detail.vocab')}</span>
+              <span class="tabular-nums font-medium">{model.vocab_size}</span>
+            </div>
           {/if}
           {#if model.expert_count && model.expert_count !== '0'}
-            <span class="text-muted-foreground">{$t('detail.experts')}</span>
-            <span class="tabular-nums">{model.expert_count}{#if model.expert_used_count && model.expert_used_count !== '0'}/{model.expert_used_count}{/if}</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-muted-foreground text-[11px] shrink-0">{$t('detail.experts')}</span>
+              <span class="tabular-nums font-medium">{model.expert_count}{#if model.expert_used_count && model.expert_used_count !== '0'}/{model.expert_used_count}{/if}</span>
+            </div>
           {/if}
           {#if model.context_length && model.context_length !== '0'}
-            <span class="text-muted-foreground">{$t('detail.context')}</span>
-            <span class="tabular-nums">{model.context_length}</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-muted-foreground text-[11px] shrink-0">{$t('detail.context')}</span>
+              <span class="tabular-nums font-medium">{model.context_length}</span>
+            </div>
           {/if}
         </div>
       </div>
