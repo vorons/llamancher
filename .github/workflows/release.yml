@@ -60,15 +60,20 @@ jobs:
 
       - name: Create AppImage
         run: |
-          # Download and extract linuxdeploy + plugins (no FUSE needed)
-          for url in "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage" "https://github.com/linuxdeploy/linuxdeploy-plugin-gtk/releases/download/continuous/linuxdeploy-plugin-gtk-x86_64.AppImage" "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"; do
-            name="$(basename "$url")"
-            wget -q "$url" -P /tmp
-            chmod +x "/tmp/$name"
-            "/tmp/$name" --appimage-extract
-            mv squashfs-root "/tmp/${name%.AppImage}"
-          done
-          # AppDir structure
+          # Download linuxdeploy (extract to avoid FUSE)
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -O /tmp/linuxdeploy.AppImage
+          chmod +x /tmp/linuxdeploy.AppImage
+          /tmp/linuxdeploy.AppImage --appimage-extract
+          mv squashfs-root /tmp/linuxdeploy
+          # Download GTK plugin (shell script, not AppImage)
+          wget -q https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh -O /tmp/linuxdeploy/linuxdeploy-plugin-gtk.sh
+          chmod +x /tmp/linuxdeploy/linuxdeploy-plugin-gtk.sh
+          # Download appimagetool (extract to avoid FUSE)
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /tmp/appimagetool.AppImage
+          chmod +x /tmp/appimagetool.AppImage
+          /tmp/appimagetool.AppImage --appimage-extract
+          mv squashfs-root /tmp/appimagetool
+          # AppDir
           mkdir -p AppDir/usr/bin
           cp build/llamancher AppDir/usr/bin/
           # Desktop entry
@@ -76,9 +81,9 @@ jobs:
           # Icon
           cp assets/llamancher.png AppDir/
           # Bundle shared libraries (WebKitGTK excluded — use system one)
-          LINUXDEPLOY_OUTPUT=/dev/null DEPLOY_GTK_VERSION=4 /tmp/linuxdeploy-x86_64/AppRun --appdir AppDir --exclude-library='libwebkitgtk*' --exclude-library='libjavascriptcoregtk*' --plugin gtk
+          LINUXDEPLOY_OUTPUT=/dev/null DEPLOY_GTK_VERSION=4 /tmp/linuxdeploy/AppRun --appdir AppDir --exclude-library='libwebkitgtk*' --exclude-library='libjavascriptcoregtk*' --plugin gtk
           # Package as AppImage
-          ARCH=x86_64 /tmp/appimagetool-x86_64/AppRun AppDir
+          ARCH=x86_64 /tmp/appimagetool/AppRun AppDir
 
       - name: Create release
         uses: softprops/action-gh-release@v2
