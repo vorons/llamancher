@@ -1,7 +1,7 @@
 <script lang="ts">
   import { selectedModel, serverStatus, serverModel, settings } from '$lib/stores.svelte';
   import ServerButton from '$lib/components/ServerButton.svelte';
-  import { Loader2, Terminal, Eye, Plus, X } from '@lucide/svelte';
+  import { Camera, ExternalLink, Headphones, Loader2, Terminal, Eye, Plus, X } from '@lucide/svelte';
   import { api } from '$lib/saucer';
   import { toast } from 'svelte-sonner';
   import { get } from 'svelte/store';
@@ -275,7 +275,19 @@
     <!-- ════ Model header ════ -->
     <div class="flex items-start justify-between gap-4">
       <div class="min-w-0">
-        <h2 class="text-lg font-semibold truncate">{model.name}</h2>
+        <h2 class="text-lg font-semibold truncate">
+          {model.name}
+          {#if model.has_vision === 'true'}
+            <span class="inline-flex items-center align-middle ml-1.5" title="Vision support">
+              <Camera size={15} class="text-muted-foreground" />
+            </span>
+          {/if}
+          {#if model.has_audio === 'true'}
+            <span class="inline-flex items-center align-middle ml-1" title="Audio support">
+              <Headphones size={15} class="text-muted-foreground" />
+            </span>
+          {/if}
+        </h2>
         <div class="text-xs text-muted-foreground mt-0.5">
           {#if model.architecture}
             <span class="font-mono uppercase tracking-tight text-[10px]">{model.architecture}</span>
@@ -299,29 +311,99 @@
       </div>
     </div>
 
-    <!-- Chips -->
-    <div class="flex flex-wrap gap-2">
-      {#if model.block_count && model.block_count !== '0'}
-        <span class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-          {model.block_count} layers
-        </span>
+    <!-- Model info -->
+    <div class="rounded-lg border border-border bg-card divide-y divide-border/50 text-xs">
+      <!-- Network architecture -->
+      <div class="p-3 space-y-1">
+        <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">Параметры сети</h3>
+        <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
+          {#if model.block_count && model.block_count !== '0'}
+            <span class="text-muted-foreground">Layers</span>
+            <span class="tabular-nums">{model.block_count}</span>
+          {/if}
+          {#if model.embedding_length && model.embedding_length !== '0'}
+            <span class="text-muted-foreground">Embedding</span>
+            <span class="tabular-nums">{model.embedding_length}</span>
+          {/if}
+          {#if model.head_count && model.head_count !== '0'}
+            <span class="text-muted-foreground">Heads</span>
+            <span class="tabular-nums">{model.head_count}</span>
+          {/if}
+          {#if model.head_count_kv && model.head_count_kv !== '0'}
+            <span class="text-muted-foreground">KV Heads</span>
+            <span class="tabular-nums">{model.head_count_kv}</span>
+          {/if}
+          {#if model.feed_forward_length && model.feed_forward_length !== '0'}
+            <span class="text-muted-foreground">FF Length</span>
+            <span class="tabular-nums">{model.feed_forward_length}</span>
+          {/if}
+          {#if model.vocab_size && model.vocab_size !== '0'}
+            <span class="text-muted-foreground">Vocab Size</span>
+            <span class="tabular-nums">{model.vocab_size}</span>
+          {/if}
+          {#if model.expert_count && model.expert_count !== '0'}
+            <span class="text-muted-foreground">Experts</span>
+            <span class="tabular-nums">{model.expert_count}{#if model.expert_used_count && model.expert_used_count !== '0'}/{model.expert_used_count}{/if}</span>
+          {/if}
+          {#if model.context_length && model.context_length !== '0'}
+            <span class="text-muted-foreground">Context</span>
+            <span class="tabular-nums">{model.context_length}</span>
+          {/if}
+        </div>
+      </div>
+
+      <!-- File -->
+      <div class="p-3 space-y-1">
+        <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">Файл</h3>
+        <div class="font-mono text-[11px] truncate text-muted-foreground" title={model.path}>
+          {model.path || '—'}
+        </div>
+        <div class="text-muted-foreground">
+          {model.size}
+          {#if model.file_type && model.file_type !== '0'}
+            · GGUF Type {model.file_type}
+          {/if}
+        </div>
+      </div>
+
+      <!-- Source -->
+      {#if model.author || model.license || model.version || model.url || model.source_url || model.languages}
+      <div class="p-3 space-y-1">
+        <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80 mb-1.5">Источник</h3>
+        {#if model.author}
+          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">Author</span>{model.author}</div>
+        {/if}
+        {#if model.license}
+          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">License</span>{model.license}</div>
+        {/if}
+        {#if model.version}
+          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">Version</span>{model.version}</div>
+        {/if}
+        {#if model.languages}
+          <div class="text-muted-foreground flex"><span class="w-16 shrink-0">Languages</span>{model.languages}</div>
+        {/if}
+        {#if model.source_url || model.url}
+          <a href={model.source_url || model.url} target="_blank" rel="noopener noreferrer"
+             class="flex items-center gap-1 text-blue-400 hover:underline truncate mt-1">
+            <ExternalLink size={11} class="shrink-0" />
+            <span class="truncate">{model.source_url || model.url}</span>
+          </a>
+        {/if}
+      </div>
       {/if}
-      {#if model.context_length && model.context_length !== '0'}
-        <span class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-          {model.context_length} ctx
-        </span>
-      {/if}
-      {#if model.has_vision === 'true' || model.has_audio === 'true'}
-        <span class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-          {model.has_vision === 'true' ? 'Vision' : ''}
-          {model.has_audio === 'true' ? 'Audio' : ''}
-        </span>
-      {/if}
+
+      <!-- Chat template -->
       {#if model.chat_template}
-        <button class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-accent transition-colors"
-          onclick={(e) => openPopover(model.chat_template!, e.currentTarget)} title="View chat template">
-          <Eye size={11} /> chat template
+      <div class="p-3">
+        <button
+          class="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+          onclick={(e) => openPopover(model.chat_template!, e.currentTarget)}
+          title="View chat template"
+        >
+          <Eye size={12} />
+          <span>View chat template</span>
         </button>
+      </div>
       {/if}
     </div>
 
