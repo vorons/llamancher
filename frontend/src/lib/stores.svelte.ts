@@ -12,8 +12,7 @@ export const settings = writable<Settings>({
   theme: 'dark',
   port: 8080,
   api_key: '',
-  last_model: '',
-  offline: false,
+  last_model: ''
 });
 export const settingsOpen = writable(false);
 
