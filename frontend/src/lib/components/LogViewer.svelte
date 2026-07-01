@@ -3,7 +3,7 @@
   import { api } from '$lib/saucer';
   import { t } from '$lib/i18n';
 
-  let { open = $bindable(false), onclose }: { open: boolean; onclose?: () => void } = $props();
+  let { open = $bindable(false) }: { open: boolean } = $props();
 
   let lines = $state<string[]>([]);
   let container: HTMLDivElement | undefined = $state();
@@ -80,7 +80,7 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="fixed inset-0 z-50 bg-black/40"
-    onclick={onclose}
+    onclick={() => open = false}
     role="presentation"
   ></div>
   <!-- Panel -->
@@ -118,7 +118,7 @@
         </button>
         <button
           class="flex items-center justify-center h-6 w-6 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
-          onclick={onclose}
+          onclick={() => open = false}
           title={$t('log.close')}
         >
           <X size={14} />
