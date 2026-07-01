@@ -58,11 +58,12 @@ html, body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: system-ui, -apple-system, sans-serif;
-  letter-spacing: 0.01em;
   color-scheme: var(--_scheme, dark);
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: hidden;
 }
 
 /* Drag regions – saucer data-webview attributes */
