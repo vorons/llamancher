@@ -469,7 +469,7 @@
           <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.predict.desc')}</p>
         </div>
         <Input id="predict" type="number" class="w-36" value={String(preset.predict)}
-          oninput={(e) => { preset.predict = parseInt(e.currentTarget.value) || -1; debouncedSave(); }} />
+          oninput={(e) => { const v = parseInt(e.currentTarget.value); if (!isNaN(v)) preset.predict = v; debouncedSave(); }} />
       </div>
 
       <!-- Min-P -->
@@ -493,7 +493,7 @@
           <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.topK.desc')}</p>
         </div>
         <Input id="top_k" type="number" class="w-36" value={String(preset.top_k)}
-          oninput={(e) => { preset.top_k = parseInt(e.currentTarget.value) || 40; debouncedSave(); }} />
+          oninput={(e) => { const v = parseInt(e.currentTarget.value); if (!isNaN(v)) preset.top_k = v; debouncedSave(); }} />
       </div>
 
       <!-- Top-P -->
@@ -571,7 +571,7 @@
           <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.seed.desc')}</p>
         </div>
         <Input id="seed" type="number" placeholder="-1" class="w-36" value={String(preset.seed)}
-          oninput={(e) => { preset.seed = parseInt(e.currentTarget.value) || -1; debouncedSave(); }} />
+          oninput={(e) => { const v = parseInt(e.currentTarget.value); if (!isNaN(v)) preset.seed = v; debouncedSave(); }} />
       </div>
     </div>
     <Separator />
@@ -630,7 +630,7 @@
           <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.batchSize.desc')}</p>
         </div>
         <Input id="batch_size" type="number" class="w-36" value={String(preset.batch_size)}
-          oninput={(e) => { preset.batch_size = parseInt(e.currentTarget.value) || 2048; debouncedSave(); }} />
+          oninput={(e) => { const v = parseInt(e.currentTarget.value); if (!isNaN(v)) preset.batch_size = v; debouncedSave(); }} />
       </div>
 
       <!-- UBatch Size -->
@@ -640,7 +640,7 @@
           <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.ubatchSize.desc')}</p>
         </div>
         <Input id="ubatch_size" type="number" class="w-36" value={String(preset.ubatch_size)}
-          oninput={(e) => { preset.ubatch_size = parseInt(e.currentTarget.value) || 512; debouncedSave(); }} />
+          oninput={(e) => { const v = parseInt(e.currentTarget.value); if (!isNaN(v)) preset.ubatch_size = v; debouncedSave(); }} />
       </div>
 
       <!-- Parallel Slots -->
@@ -650,7 +650,7 @@
           <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.parallel.desc')}</p>
         </div>
         <Input id="parallel" type="number" min="1" class="w-36" value={String(preset.parallel)}
-          oninput={(e) => { preset.parallel = parseInt(e.currentTarget.value) || 1; debouncedSave(); }} />
+          oninput={(e) => { const v = parseInt(e.currentTarget.value); if (!isNaN(v)) preset.parallel = v; debouncedSave(); }} />
       </div>
 
       <!-- Timeout -->

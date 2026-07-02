@@ -346,7 +346,9 @@ int main(int argc, char* argv[]) {
       };
       auto gf = [&](const std::string& k, float& v) {
         if (!kv.contains(k)) return;
-        try { v = std::stof(kv.at(k)); } catch (...) {}
+        auto& s = kv.at(k);
+        auto [p, ec] = std::from_chars(s.data(), s.data() + s.size(), v);
+        if (ec != std::errc{}) v = 0.0f;
       };
       auto gs = [&](const std::string& k, std::string& v) {
         if (kv.contains(k)) v = kv.at(k);
