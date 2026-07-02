@@ -23,11 +23,10 @@
 // Observer that bridges server status → JS via saucer execute
 class StatusBridge : public ServerObserver {
   std::shared_ptr<saucer::smartview> webview_;
-  std::shared_ptr<ServerManager> mgr_;
 
 public:
-  explicit StatusBridge(std::shared_ptr<saucer::smartview> wv, std::shared_ptr<ServerManager> mgr)
-    : webview_(std::move(wv)), mgr_(std::move(mgr)) {}
+  explicit StatusBridge(std::shared_ptr<saucer::smartview> wv)
+    : webview_(std::move(wv)) {}
 
   void on_status_change(ServerStatus s) override {
     const char* st = "stopped";
@@ -65,7 +64,7 @@ int main(int argc, char* argv[]) {
 
     // ── Status bridge (observer) ───────────────────────────────────
     auto server_mgr = std::make_shared<ServerManager>();
-    auto bridge = std::make_shared<StatusBridge>(webview, server_mgr);
+    auto bridge = std::make_shared<StatusBridge>(webview);
     server_mgr->set_observer(bridge);
 
     // ── Exposed API ────────────────────────────────────────────────
@@ -514,6 +513,12 @@ int main(int argc, char* argv[]) {
       gtk_file_filter_add_pattern(filter, "*.txt");
       show_file_dialog(nullptr, "Select grammar file",
                         GTK_FILE_CHOOSER_ACTION_OPEN, std::move(exec), filter);
+    });
+
+    // ── Stop server when window closes ──────────────────────────
+    window->on<saucer::window::event::close>([server_mgr]() -> saucer::policy {
+      server_mgr->stop();
+      return saucer::policy::allow;
     });
 
     // ── Load frontend ──────────────────────────────────────────────
