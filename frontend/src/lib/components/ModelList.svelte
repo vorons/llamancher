@@ -33,6 +33,12 @@
   const filtered = $derived.by(() => {
     let list = [...$models];
 
+    // Hide draft/MTP models from the main list
+    list = list.filter((m) => {
+      const name = m.name.toLowerCase();
+      return !name.includes('draft') && !name.includes('mtp');
+    });
+
     // Filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
