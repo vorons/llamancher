@@ -178,10 +178,6 @@
         />
       </div>
 
-      {#if filtered.length !== $models.length}
-        <span class="text-[10px] text-muted-foreground whitespace-nowrap">{$t('modelList.of', { n: filtered.length, total: $models.length })}</span>
-      {/if}
-
       <!-- Sort dropdown trigger -->
       <div class="relative">
         <button
