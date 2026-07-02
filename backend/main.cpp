@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
 
       // For models without a preset, create one with GGUF metadata cached
       for (auto& m : models) {
-        if (!Preset::exists(m.name)) {
+        if (!Preset::exists(m.path)) {
           Preset p;
           // Populate all metadata
           p.architecture = m.architecture;
@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
           if (m.sample_top_k > 0.001f)  p.top_k = static_cast<int>(m.sample_top_k);
           if (m.sample_top_p > 0.001f)  p.top_p = m.sample_top_p;
           if (m.sample_min_p > 0.001f)  p.min_p = m.sample_min_p;
-          p.save(m.name);
+          p.save(m.path);
         }
       }
 
@@ -255,8 +255,8 @@ int main(int argc, char* argv[]) {
       return result;
     });
 
-    webview->expose("load_preset", [](const std::string& model_name) {
-      auto p = Preset::load(model_name);
+    webview->expose("load_preset", [](const std::string& model_path) {
+      auto p = Preset::load(model_path);
       auto result = std::map<std::string, std::string>{
         // ─── Основные ────────────────────────────────────
         {"ctx_size",      std::to_string(p.ctx_size)},
@@ -332,9 +332,9 @@ int main(int argc, char* argv[]) {
       return result;
     });
 
-    webview->expose("save_preset", [](const std::string& model_name,
+    webview->expose("save_preset", [](const std::string& model_path,
                                        const std::map<std::string, std::string>& kv) {
-      auto p = Preset::load(model_name);
+      auto p = Preset::load(model_path);
       auto gi = [&](const std::string& k, int& v) {
         if (!kv.contains(k)) return;
         try { v = std::stoi(kv.at(k)); } catch (...) {}
@@ -433,7 +433,7 @@ int main(int argc, char* argv[]) {
       gb("has_vision",          p.has_vision);
       gb("has_audio",           p.has_audio);
 
-      p.save(model_name);
+      p.save(model_path);
     });
 
     webview->expose("server_status", [server_mgr]() {
@@ -458,7 +458,7 @@ int main(int argc, char* argv[]) {
       if (settings->llama_server_path.empty()) {
         return std::string("server_not_found");
       }
-      auto preset = Preset::load(model_name);
+      auto preset = Preset::load(model_path);
       auto args = preset.cli_args(model_path);
       args.insert(args.end(), {"--host", "127.0.0.1"});
       args.push_back("--port");

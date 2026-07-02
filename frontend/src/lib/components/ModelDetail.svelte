@@ -72,10 +72,10 @@
 
   $effect(() => {
     if (model) {
-      const modelName = model.name;
+      const modelPath = model.path;
       loadingPreset = true;
-      api.loadPreset(modelName).then((kv) => {
-        if (model?.name !== modelName) { loadingPreset = false; return; }
+      api.loadPreset(modelPath).then((kv) => {
+        if (model?.path !== modelPath) { loadingPreset = false; return; }
         preset = {
           ctx_size: pi(kv.ctx_size, 2048),
           threads: pi(kv.threads, 4),
@@ -183,11 +183,11 @@
   }
 
   function debouncedSave() {
-    const modelName = model?.name;
+    const modelPath = model?.path;
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      if (modelName && model?.name === modelName) {
-        api.savePreset(modelName, savePayload());
+      if (modelPath && model?.path === modelPath) {
+        api.savePreset(modelPath, savePayload());
         if ($serverStatus === 'running' && modelDisplayName(model) && $serverModel === modelDisplayName(model)) {
           toast.info($t('toast.changesApplyRestart'));
         }
@@ -229,7 +229,7 @@
           toast.error($t('toast.setPath'));
           return;
         }
-        await api.savePreset(model.name, savePayload());
+        await api.savePreset(model.path, savePayload());
         const result = await api.startServer(model.name, model.path);
         if (result === 'server_not_found') {
           toast.error($t('toast.serverNotFound'));

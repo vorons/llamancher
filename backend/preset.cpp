@@ -7,20 +7,20 @@
 
 namespace fs = std::filesystem;
 
-fs::path Preset::path(const std::string& model_name) const {
-  auto home = getenv("HOME");
-  auto base = fs::path(home ? home : "/tmp") / ".llamancher" / "models";
-  return base / (model_name + ".preset.json");
+fs::path Preset::path(const std::string& model_path) const {
+  // Save preset alongside the model file, replacing extension
+  fs::path p(model_path);
+  return p.parent_path() / (p.stem().string() + ".preset.json");
 }
 
-bool Preset::exists(const std::string& model_name) {
+bool Preset::exists(const std::string& model_path) {
   Preset p;
-  return fs::exists(p.path(model_name));
+  return fs::exists(p.path(model_path));
 }
 
-Preset Preset::load(const std::string& model_name) {
+Preset Preset::load(const std::string& model_path) {
   Preset p;
-  auto fp = p.path(model_name);
+  auto fp = p.path(model_path);
   if (!fs::exists(fp)) return p;
 
   // ponytail: if the file is corrupt we silently return defaults. Upgrade to
@@ -28,20 +28,20 @@ Preset Preset::load(const std::string& model_name) {
   auto ec = glz::read_file_json(p, fp.string(), std::string{});
   if (ec) {
     std::fprintf(stderr, "llamancher: corrupt preset %s — %s\n",
-                 model_name.c_str(), glz::format_error(ec).c_str());
+                 model_path.c_str(), glz::format_error(ec).c_str());
     return Preset{};
   }
   return p;
 }
 
-void Preset::save(const std::string& model_name) const {
-  auto fp = path(model_name);
+void Preset::save(const std::string& model_path) const {
+  auto fp = path(model_path);
   fs::create_directories(fp.parent_path());
 
   auto ec = glz::write_file_json(*this, fp.string(), std::string{});
   if (ec) {
     std::fprintf(stderr, "llamancher: failed to save preset %s — %s\n",
-                 model_name.c_str(), glz::format_error(ec).c_str());
+                 model_path.c_str(), glz::format_error(ec).c_str());
   }
 }
 

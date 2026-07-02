@@ -90,10 +90,10 @@ struct Preset {
   bool has_vision = false;
   bool has_audio = false;
 
-  static Preset load(const std::string& model_name);
-  void save(const std::string& model_name) const;
-  std::filesystem::path path(const std::string& model_name) const;
-  static bool exists(const std::string& model_name);
+  static Preset load(const std::string& model_path);
+  void save(const std::string& model_path) const;
+  std::filesystem::path path(const std::string& model_path) const;
+  static bool exists(const std::string& model_path);
 
   // Build CLI args vector for llama-server
   std::vector<std::string> cli_args(const std::string& model_path) const;
