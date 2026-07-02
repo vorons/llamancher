@@ -9,12 +9,40 @@
   let {
     preset,
     debouncedSave,
+    draftModelOptions = [],
   }: {
     preset: Preset;
     debouncedSave: () => void;
+    draftModelOptions: string[];
   } = $props();
 
   const isDraftMode = $derived(preset.spec_type === 'draft-model' || preset.spec_type === 'draft-mtp');
+
+  // Dropdown options: draft models in same dir + current value if external + Browse
+  const draftSelectOptions = $derived.by(() => {
+    const opts: { value: string; label: string }[] = [];
+    for (const path of draftModelOptions) {
+      const filename = path.split('/').pop() || path;
+      opts.push({ value: path, label: filename });
+    }
+    // Include the currently selected path even if it's outside the model dir
+    if (preset.draft_model && !draftModelOptions.includes(preset.draft_model)) {
+      const filename = preset.draft_model.split('/').pop() || preset.draft_model;
+      opts.push({ value: preset.draft_model, label: filename });
+    }
+    return opts;
+  });
+
+  async function handleDraftModelChange(e: Event) {
+    const val = (e.currentTarget as HTMLSelectElement).value;
+    if (val === '__browse__') {
+      const path = await api.pickFile();
+      if (path) { preset.draft_model = path; debouncedSave(); }
+    } else {
+      preset.draft_model = val;
+      debouncedSave();
+    }
+  }
 </script>
 
 <div class="space-y-1">
@@ -36,20 +64,15 @@
         <Label for="draft_model" class="text-sm">{$t('detail.field.draftModel')} <span class="font-mono text-[10px] text-muted-foreground">-md, --model-draft</span></Label>
         <p class="text-[11px] leading-tight text-muted-foreground">{$t('detail.field.draftModel.desc')}</p>
       </div>
-      <div class="flex items-center gap-2">
-        <Input id="draft_model" placeholder="/path/to/draft.gguf" class="w-28" value={preset.draft_model}
-          oninput={(e) => { preset.draft_model = e.currentTarget.value; debouncedSave(); }} />
-        <button
-          class="flex items-center justify-center h-7 px-2 rounded-md border border-border bg-secondary hover:bg-accent text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-          onclick={async () => {
-            const path = await api.pickFile();
-            if (path) { preset.draft_model = path; debouncedSave(); }
-          }}
-          title={$t('settings.browse')}
-        >
-          {$t('settings.browse')}
-        </button>
-      </div>
+      <NativeSelect id="draft_model" class="w-52" value={preset.draft_model} onchange={handleDraftModelChange}>
+        {#if !preset.draft_model}
+          <NativeSelectOption value="">—</NativeSelectOption>
+        {/if}
+        {#each draftSelectOptions as opt}
+          <NativeSelectOption value={opt.value}>{opt.label}</NativeSelectOption>
+        {/each}
+        <NativeSelectOption value="__browse__">{$t('settings.browse')}…</NativeSelectOption>
+      </NativeSelect>
     </div>
 
     <div class="flex items-center justify-between gap-4 py-1.5">

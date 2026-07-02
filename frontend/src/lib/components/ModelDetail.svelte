@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { selectedModel, serverStatus, serverModel, settings } from '$lib/stores.svelte';
+  import { selectedModel, serverStatus, serverModel, settings, models } from '$lib/stores.svelte';
   import ServerButton from '$lib/components/ServerButton.svelte';
   import { Camera, ExternalLink, Headphones, Loader2, Terminal, Eye, Plus, X } from '@lucide/svelte';
   import { api } from '$lib/saucer';
@@ -53,6 +53,24 @@
   function closePopover() { popoverField = null; popoverPos = null; }
 
   const model = $derived($selectedModel);
+
+  // Draft model options for speculative decoding — same dir, name-based filtering
+  const draftModelOptions = $derived.by(() => {
+    if (!model || !preset.spec_type) return [];
+    const dir = model.path.substring(0, model.path.lastIndexOf('/'));
+    const isMTP = preset.spec_type === 'draft-mtp';
+    return $models
+      .filter((m) => m.path !== model.path)
+      .filter((m) => {
+        const parentDir = m.path.substring(0, m.path.lastIndexOf('/'));
+        return parentDir === dir;
+      })
+      .filter((m) => {
+        const name = m.name.toLowerCase();
+        return isMTP ? name.includes('mtp') : name.includes('draft');
+      })
+      .map((m) => m.path);
+  });
 
   function pf(v: string | undefined, def: number): number {
     if (v === undefined || v === '') return def;
@@ -854,7 +872,7 @@
     <!-- ============================================================ -->
     <div class="[contain:layout]">
       <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-3">{$t('detail.section.spec')}</h3>
-      <ModelSpeculative {preset} {debouncedSave} />
+      <ModelSpeculative {preset} {debouncedSave} {draftModelOptions} />
     </div>
     <Separator />
 
