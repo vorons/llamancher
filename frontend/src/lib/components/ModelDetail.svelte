@@ -141,7 +141,7 @@
         };
         loadingPreset = false;
       }).catch(() => {
-        if (model?.name !== modelName) { loadingPreset = false; return; }
+        if (model?.path !== modelPath) { loadingPreset = false; return; }
         loadingPreset = false;
       });
     }
