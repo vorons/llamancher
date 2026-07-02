@@ -75,7 +75,12 @@
       } else if (status === 'stopped') {
         toast.info($t('toast.serverStopped'));
       } else if (status === 'error') {
-        toast.error($t('toast.serverError'));
+        // Fetch detailed error message from backend
+        api.serverStatus().then(st => {
+          toast.error(st.error || $t('toast.serverError'));
+        }).catch(() => {
+          toast.error($t('toast.serverError'));
+        });
       }
     });
 

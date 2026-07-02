@@ -26,6 +26,7 @@ public:
 
   ServerStatus status() const;
   std::string   current_model() const;
+  std::string   error_message() const { return error_message_; }
   void          set_current_model(const std::string& name) { current_model_ = name; }
   int           port() const;
 
@@ -41,6 +42,7 @@ private:
   std::string server_path_;
   int port_ = 8080;
   std::string log_path_;
+  std::string error_message_;
   pid_t pid_ = 0;
   std::unique_ptr<std::thread> health_thread_;
   std::atomic<bool> running_{false};

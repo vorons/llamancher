@@ -101,7 +101,7 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
     args.push_back("--seed");
     args.push_back(std::to_string(seed));
   }
-  if (flash_attn)  args.emplace_back("--flash-attn");
+  if (flash_attn) { args.push_back("--flash-attn"); args.push_back("on"); }
   if (mlock)       args.emplace_back("--mlock");
   if (no_mmap)     args.emplace_back("--no-mmap");
 
@@ -138,7 +138,7 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
     args.push_back("--frequency-penalty");
     args.push_back(std::to_string(frequency_penalty));
   }
-  if (reasoning_mode) args.emplace_back("--reasoning");
+  if (reasoning_mode) { args.push_back("--reasoning"); args.push_back("on"); }
   if (reasoning_budget > 0) {
     args.push_back("--reasoning-budget");
     args.push_back(std::to_string(reasoning_budget));
@@ -150,7 +150,7 @@ std::vector<std::string> Preset::cli_args(const std::string& model_path) const {
     args.push_back(spec_type);
   }
   if (!draft_model.empty()) {
-    args.push_back("--draft-model");
+    args.push_back("--model-draft");
     args.push_back(draft_model);
   }
   if (!hf_repo_draft.empty()) {

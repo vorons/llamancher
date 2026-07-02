@@ -11,6 +11,8 @@
 #include <thread>
 #include <format>
 #include <iostream>
+#include <fstream>
+#include <deque>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -75,6 +77,7 @@ void ServerManager::start(const std::string& server_path,
   }
 
   if (pid_ < 0) {
+    error_message_ = "fork() failed: " + std::string(std::strerror(errno));
     status_.store(ServerStatus::Error);
     notify(ServerStatus::Error);
     return;
@@ -117,7 +120,46 @@ void ServerManager::health_loop() {
   }
 }
 
+// Read last N lines of a file — for capturing server stderr on crash
+static std::string read_last_lines(const std::string& path, int n) {
+  std::ifstream f(path);
+  if (!f) return {};
+  std::deque<std::string> lines;
+  std::string line;
+  while (std::getline(f, line)) {
+    lines.push_back(line);
+    if (static_cast<int>(lines.size()) > n)
+      lines.pop_front();
+  }
+  std::string result;
+  for (auto& l : lines) result += l + "\n";
+  if (!result.empty() && result.back() == '\n') result.pop_back();
+  return result;
+}
+
 void ServerManager::health_check() {
+  // Check if the child process has exited
+  if (pid_ > 0) {
+    int wstatus;
+    auto ret = waitpid(pid_, &wstatus, WNOHANG);
+    if (ret == pid_) {
+      // Process exited — read log for error, transition to Error
+      error_message_ = read_last_lines(log_path_, 15);
+      if (error_message_.empty()) {
+        if (WIFEXITED(wstatus))
+          error_message_ = "Server exited with code " + std::to_string(WEXITSTATUS(wstatus));
+        else if (WIFSIGNALED(wstatus))
+          error_message_ = "Server killed by signal " + std::to_string(WTERMSIG(wstatus));
+      }
+      pid_ = 0;
+      running_.store(false);
+      status_.store(ServerStatus::Error);
+      notify(ServerStatus::Error);
+      return;
+    }
+  }
+
+  // TCP health check
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock < 0) return;
 

@@ -14,7 +14,7 @@ std::vector<ModelInfo> ModelManager::scan() const {
   std::vector<ModelInfo> models;
   if (!fs::exists(dir_)) return models;
 
-  for (auto& entry : fs::directory_iterator(dir_)) {
+  for (auto& entry : fs::recursive_directory_iterator(dir_)) {
     if (!entry.is_regular_file()) continue;
     auto ext = entry.path().extension().string();
     if (ext != ".gguf") continue;

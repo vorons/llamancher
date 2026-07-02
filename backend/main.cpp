@@ -23,10 +23,11 @@
 // Observer that bridges server status → JS via saucer execute
 class StatusBridge : public ServerObserver {
   std::shared_ptr<saucer::smartview> webview_;
+  std::shared_ptr<ServerManager> mgr_;
 
 public:
-  explicit StatusBridge(std::shared_ptr<saucer::smartview> wv)
-    : webview_(std::move(wv)) {}
+  explicit StatusBridge(std::shared_ptr<saucer::smartview> wv, std::shared_ptr<ServerManager> mgr)
+    : webview_(std::move(wv)), mgr_(std::move(mgr)) {}
 
   void on_status_change(ServerStatus s) override {
     const char* st = "stopped";
@@ -63,9 +64,8 @@ int main(int argc, char* argv[]) {
     window->set_background({.r = 10, .g = 10, .b = 10, .a = 255});
 
     // ── Status bridge (observer) ───────────────────────────────────
-    auto bridge = std::make_shared<StatusBridge>(webview);
-
     auto server_mgr = std::make_shared<ServerManager>();
+    auto bridge = std::make_shared<StatusBridge>(webview, server_mgr);
     server_mgr->set_observer(bridge);
 
     // ── Exposed API ────────────────────────────────────────────────
@@ -444,6 +444,7 @@ int main(int argc, char* argv[]) {
       return std::map<std::string, std::string>{
         {"status", st},
         {"model",  server_mgr->current_model()},
+        {"error",  server_mgr->error_message()},
       };
     });
 
