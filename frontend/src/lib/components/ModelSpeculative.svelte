@@ -16,7 +16,7 @@
     draftModelOptions: string[];
   } = $props();
 
-  const isDraftMode = $derived(preset.spec_type === 'draft-model' || preset.spec_type === 'draft-mtp');
+  const isDraftMode = $derived(preset.spec_type === 'draft-simple' || preset.spec_type === 'draft-mtp');
 
   // Dropdown options: draft models in same dir + current value if external + Browse
   const draftSelectOptions = $derived.by(() => {
@@ -54,7 +54,7 @@
     <NativeSelect id="spec_type" class="w-36" value={preset.spec_type} onchange={(e) => { preset.spec_type = e.currentTarget.value; debouncedSave(); }}>
       <NativeSelectOption value="">{$t('detail.spec.off')}</NativeSelectOption>
       <NativeSelectOption value="draft-mtp">Draft MTP</NativeSelectOption>
-      <NativeSelectOption value="draft-model">Draft Model</NativeSelectOption>
+      <NativeSelectOption value="draft-simple">Draft Simple</NativeSelectOption>
     </NativeSelect>
   </div>
 

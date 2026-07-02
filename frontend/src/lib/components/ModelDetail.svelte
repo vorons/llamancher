@@ -58,7 +58,6 @@
   const draftModelOptions = $derived.by(() => {
     if (!model || !preset.spec_type) return [];
     const dir = model.path.substring(0, model.path.lastIndexOf('/'));
-    const isMTP = preset.spec_type === 'draft-mtp';
     return $models
       .filter((m) => m.path !== model.path)
       .filter((m) => {
@@ -67,7 +66,9 @@
       })
       .filter((m) => {
         const name = m.name.toLowerCase();
-        return isMTP ? name.includes('mtp') : name.includes('draft');
+        if (preset.spec_type === 'draft-mtp') return name.includes('mtp');
+        if (preset.spec_type === 'draft-simple') return name.includes('draft');
+        return false;
       })
       .map((m) => m.path);
   });
